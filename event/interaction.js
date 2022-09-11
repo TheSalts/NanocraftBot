@@ -10,7 +10,6 @@ const {
   TextInputStyle,
   InteractionType,
   PermissionsBitField,
-  InteractionType,
   EmbedBuilder,
 } = require("discord.js");
 const fetch = require("node-fetch");
