@@ -25,7 +25,7 @@ console.log(startAt.getTime());
 client.once("ready", async () => {
   console.log("Notion SDK Ready!");
   async function sendMessage() {
-    let channel = client.channels.cache.get("987045539000496144");
+    let channel = client.channels.cache.get("1018439245192515624");
     let sendEmbed = await getData();
     if (!sendEmbed) return;
     await channel.send({ embeds: [sendEmbed] });
