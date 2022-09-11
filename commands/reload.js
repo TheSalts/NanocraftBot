@@ -21,7 +21,8 @@ module.exports = {
           { name: "✅│크리-서버 서버상태", value: "playerinfo-c" },
           { name: "📌│서버상태 서버상태", value: "playerinfo-n" },
           { name: "이모지 사용", value: "reactionAdd" },
-          { name: "노션 api", value: "notion" }
+          { name: "노션 api", value: "notion" },
+          { name: "Link api", value: "link_api" }
         )
     ),
   /**
