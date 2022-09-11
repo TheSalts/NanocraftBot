@@ -1,4 +1,4 @@
-// require("dotenv").config();
+require("dotenv").config();
 const {
   SlashCommandBuilder,
   ActionRowBuilder,
@@ -54,7 +54,7 @@ module.exports = {
       let noExpiration = [];
       let data;
 
-      await fetch("http://localhost:3000/api/info")
+      await fetch(`http://localhost:${process.env.PORT}/api/info`)
         .then((res) => res.json())
         .then((json) => {
           data = json;
