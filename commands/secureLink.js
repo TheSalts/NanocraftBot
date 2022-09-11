@@ -46,7 +46,7 @@ module.exports = {
         expirationTimeInput
       );
 
-      await modal.addComponents(originalUrlInputRow, expirationTimeInputRow);
+      modal.addComponents(originalUrlInputRow, expirationTimeInputRow);
 
       await interaction.showModal(modal);
     }
