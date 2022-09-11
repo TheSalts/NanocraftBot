@@ -1047,6 +1047,58 @@ async function modal(interaction) {
         .setTitle("기타")
         .setDescription(otherDescriptionRes);
       await interaction.channel.send({ embeds: [otherEmbed] });
+      break;
+    case "shortUrlGen":
+      const originalUrl =
+        interaction.fields.getTextInputValue("originalUrlInput");
+      const expirationTime = interaction.fields.getTextInputValue(
+        "expirationTimeInput"
+      );
+
+      if (
+        !originalUrl.match(
+          /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/
+        )
+      ) {
+        const e = new EmbedBuilder()
+          .setTitle("올바른 URL값이 아닙니다.")
+          .setDescription("올바른 URL값을 입력해주세요.")
+          .setColor(0xff0000);
+        return await interaction.reply({ embeds: [e], ephemeral: true });
+      }
+      if (!expirationTime.match(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)) {
+        const e = new EmbedBuilder()
+          .setTitle("올바른 시간을 입력해주세요")
+          .setColor(0xff0000)
+          .setDescription("HH:MM 형식으로 입력해주세요");
+        return await interaction.reply({ embeds: [e], ephemeral: true });
+      }
+
+      await fetch(
+        `http://localhost:3000/api/add?originalUrl=${originalUrl}&expirationTime=${expirationTime}`
+      )
+        .then((res) => res.json())
+        .then((json) => {
+          const e = new EmbedBuilder()
+            .setColor(0x00ae86)
+            .setTitle("단축 링크 생성이 완료되었습니다")
+            .addFields([
+              {
+                name: "📥 단축 링크",
+                value: `http://localhost:3000/${json.shortUrlId}`,
+              },
+              {
+                name: "📤 원본 URL",
+                value: json.originalUrl,
+              },
+              {
+                name: "🕗 유효 시간",
+                value: json.expirationTime,
+              },
+            ]);
+          return interaction.reply({ embeds: [e] });
+        });
+      break;
   }
 }
 
