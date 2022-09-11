@@ -1,3 +1,4 @@
+require("dotenv").config();
 const Discord = require("discord.js");
 const config = require("../config.json");
 const {
@@ -956,10 +957,6 @@ function autocomplete(interaction) {
  * @param {Discord.ModalSubmitInteraction} interaction
  */
 async function modal(interaction) {
-  await interaction.reply({
-    content: "응답이 성공적으로 제출되었습니다.",
-    ephemeral: true,
-  });
   switch (interaction.customId) {
     case "bugReport":
       const bugfeatureRes = interaction.fields.getTextInputValue("bugfeature");
@@ -1077,7 +1074,7 @@ async function modal(interaction) {
       }
 
       await fetch(
-        `http://localhost:3000/api/add?originalUrl=${originalUrl}&expirationTime=${expirationTime}`
+        `http://localhost:${process.env.PORT}/api/add?originalUrl=${originalUrl}&expirationTime=${expirationTime}`
       )
         .then((res) => res.json())
         .then((json) => {
@@ -1087,7 +1084,7 @@ async function modal(interaction) {
             .addFields([
               {
                 name: "📥 단축 링크",
-                value: `http://localhost:3000/${json.shortUrlId}`,
+                value: `http://localhost:${process.env.PORT}/${json.shortUrlId}`,
               },
               {
                 name: "📤 원본 URL",
