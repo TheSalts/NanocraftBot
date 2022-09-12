@@ -75,8 +75,8 @@ function addsel(value) {
 var crypto = require("crypto");
 
 function getSeed() {
-  var name = "braitsch";
-  var hash = crypto.createHash("md5").update(name).digest("hex");
+  let cryptoData = Math.random();
+  var hash = crypto.createHash("md5").update(`${cryptoData}`).digest("hex");
   return hash;
 }
 
@@ -99,6 +99,8 @@ function getVoteOption() {
 async function execute(interaction) {
   if (!fs.existsSync("./data/votetime.json"))
     fs.writeFileSync("./data/votetime.json", JSON.stringify([]));
+  if (!fs.existsSync("./data/vote.json"))
+    fs.writeFileSync("./data/vote.json", JSON.stringify([]));
   sel = [];
   let read = fs.readFileSync("./data/vote.json", "utf8");
   let voteList = JSON.parse(read);
