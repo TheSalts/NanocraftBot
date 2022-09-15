@@ -972,6 +972,10 @@ async function modal(interaction) {
         )
         .setColor("Red");
       await interaction.channel.send({ embeds: [bugReportEmbed] });
+      await interaction.reply({
+        ephemeral: true,
+        content: "문의를 성공적으로 제출했어요.",
+      });
       break;
     case "report":
       const reportUserRes = interaction.fields.getTextInputValue("reportUser");
@@ -986,6 +990,10 @@ async function modal(interaction) {
         )
         .setColor("Red");
       await interaction.channel.send({ embeds: [reportEmbed] });
+      await interaction.reply({
+        ephemeral: true,
+        content: "문의를 성공적으로 제출했어요.",
+      });
       break;
     case "upServer":
       const howUpRes = interaction.fields.getTextInputValue("howUp");
@@ -1001,6 +1009,10 @@ async function modal(interaction) {
         )
         .setColor("Blue");
       await interaction.channel.send({ embeds: [upServerEmbed] });
+      await interaction.reply({
+        ephemeral: true,
+        content: "문의를 성공적으로 제출했어요.",
+      });
       break;
     case "qnaServer":
       const howqnaRes = interaction.fields.getTextInputValue("howqna");
@@ -1014,7 +1026,10 @@ async function modal(interaction) {
         )
         .setColor("Blue");
       await interaction.channel.send({ embeds: [qnaServerEmbed] });
-
+      await interaction.reply({
+        ephemeral: true,
+        content: "문의를 성공적으로 제출했어요.",
+      });
       break;
     case "memberAdd":
       const whatmadeRes = interaction.fields.getTextInputValue("whatmade");
@@ -1037,6 +1052,10 @@ async function modal(interaction) {
         )
         .setColor("Green");
       await interaction.channel.send({ embeds: [memberAddEmbed] });
+      await interaction.reply({
+        ephemeral: true,
+        content: "문의를 성공적으로 제출했어요.",
+      });
       break;
     case "other":
       const otherDescriptionRes =
@@ -1046,6 +1065,10 @@ async function modal(interaction) {
         .setTitle("기타")
         .setDescription(otherDescriptionRes);
       await interaction.channel.send({ embeds: [otherEmbed] });
+      await interaction.reply({
+        ephemeral: true,
+        content: "문의를 성공적으로 제출했어요.",
+      });
       break;
     case "shortUrlGen":
       const originalUrl =

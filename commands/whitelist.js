@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const config = require("../config.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -68,9 +69,9 @@ module.exports = {
       );
 
     if (address == "크리에이티브 서버") {
-      var server = "creative.nanocraft.kr";
+      var serverport = 3389;
     } else if (address == "SMP 서버") {
-      var server = "smp.nanocraft.kr";
+      var serverport = 8863;
       let opt = interaction.options.getString("teamtag");
       if (opt == "Nanocraft") var team = "nanocraft";
       if (opt == "Partner") var team = "partner";
@@ -105,8 +106,8 @@ module.exports = {
 
     if (team) infoEmbed.addFields({ name: "Team", value: team });
 
-    var serverport = 8863;
-    var rconpassword = "j89dk2020hello#9076melon9secu0re";
+    var server = "182.231.209.148";
+    var rconpassword = config.rconpw;
 
     fs.writeFileSync("./data/teamlist.json", JSON.stringify(list));
 

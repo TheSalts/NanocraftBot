@@ -10,8 +10,8 @@ module.exports = {
         .setDescription("실행할 서버")
         .setRequired(true)
         .setChoices(
-          { name: "SMP", value: "smp.nanocraft.kr" },
-          { name: "크리에이티브", value: "creative.nanocraft.kr" }
+          { name: "SMP", value: "8863" },
+          { name: "크리에이티브", value: "3389" }
         )
     )
     .addStringOption((option) =>
@@ -38,7 +38,9 @@ module.exports = {
 
     const option2 = interaction.options.getString("명령어");
     const util = require("minecraft-server-util");
-    const server = interaction.options.getString("서버");
+    const serverIp = "182.231.209.148";
+    const serverPort = interaction.options.getString("서버") * 1;
+
     await interaction.reply({
       ephemeral: true,
       content: "명령어를 실행하는 중...",
@@ -49,13 +51,13 @@ module.exports = {
         content: "잘못된 명령어 입니다!",
       });
 
-    const client = new util.RCON(server, {
-      port: config.rconport,
+    const client = new util.RCON(serverIp, {
+      port: serverPort,
       password: config.rconpw,
     });
 
     await client
-      .connect(server, config.rconport)
+      .connect(serverIp, serverPort)
       .then(async () => {
         await client.login(config.rconpw);
         const message = await client.execute(option2);
