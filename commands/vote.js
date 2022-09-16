@@ -276,7 +276,7 @@ async function execute(interaction) {
         fs.writeFileSync("./data/voteResult.json", JSON.stringify(voted));
         if (term != 0)
           wait(1000 * 60 * 60 * term).then(() => {
-            let { stopvote } = require("../menu.js");
+            let { stopvote } = require("../event/interaction.js");
             stopvote(seed, interaction.member.user.id);
           });
       });
