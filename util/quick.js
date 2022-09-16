@@ -84,7 +84,7 @@ module.exports = {
    * @returns
    */
   readFile: function (path) {
-    if (typeof path !== String)
+    if (typeof path !== "string")
       throw new Error(`Path must be string, not ${typeof path}`);
     if (!fs.existsSync(path)) fs.writeFileSync(path, JSON.stringify([]));
     let read = fs.readFileSync(path, "utf8");
