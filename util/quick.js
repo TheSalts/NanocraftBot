@@ -26,7 +26,7 @@ module.exports = {
    * @description Send Embed when user has no permission
    * @param {Discord.Interaction|Discord.Channel|Discord.User} place 임베드를 보낼 곳
    * @param {string} permissionName 권한 이름
-   * @returns
+   * @returns {Discord.Message}
    */
   sendPermissionErrorEmbed: function (place, permissionName) {
     let embed;
@@ -52,7 +52,7 @@ module.exports = {
   /**
    * @description Get an Error Embed
    * @param {Error} error
-   * @returns
+   * @returns {Discord.Embed}
    */
   getErrorEmbed: function (error) {
     if (!error) throw new Error(`Param "error" is not an Error object`);
@@ -67,6 +67,7 @@ module.exports = {
    * @description Send an Error Embed
    * @param {Discord.Interaction|Discord.Channel|Discord.User} place 임베드를 보낼 곳
    * @param {Error} error
+   * @returns {Discord.Message}
    */
   sendErrorEmbed: function (place, error) {
     if (!error) throw new Error(`Param "error" is not an Error object`);
