@@ -43,7 +43,11 @@ module.exports = {
         .setColor("Red")
         .setDescription(`작업을 수행하려면 해당 권한이 필요합니다.`);
     }
-    return place.send({ embeds: [embed] });
+    return place.channel
+      ? place.isRepliable()
+        ? place.reply({ embeds: [embed], ephemeral: true })
+        : place.followUp({ embeds: [embed], ephemeral: true })
+      : place.send({ embeds: [embed] });
   },
   /**
    * @description Get an Error Embed
@@ -72,7 +76,7 @@ module.exports = {
       .setDescription(
         `예기치 못한 오류가 발생했습니다.\n관리자에게 문의 바랍니다.\n${error.stack}`
       );
-    place.channel
+    return place.channel
       ? place.isRepliable()
         ? place.reply({ embeds: [embed], ephemeral: true })
         : place.followUp({ embeds: [embed], ephemeral: true })
