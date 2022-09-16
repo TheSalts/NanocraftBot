@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const Discord = require("discord.js");
+const quick = require("../util/quick");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -31,19 +32,14 @@ module.exports = {
    * @returns
    */
   async execute(interaction) {
+    if (!interaction.member.roles.cache.some((role) => role.name === "MOD")) {
+      return quick.sendPermissionErrorEmbed(interaction, "MOD");
+    }
     var processName = interaction.options.getString("프로세스");
     if (!processName) processName = "all";
     // var kill = require("tree-kill");
     var spawn = require("child_process").spawn;
-    if (!interaction.member.roles.cache.some((role) => role.name === "MOD")) {
-      const permissionEmbed = new Discord.EmbedBuilder()
-        .setTitle("에러: 권한이 없습니다.")
-        .setColor("#FF0000");
-      return await interaction.reply({
-        ephemeral: true,
-        embeds: [permissionEmbed],
-      });
-    }
+
     await interaction.reply({
       ephemeral: true,
       content: "봇을 재시작합니다.\n프로세스: " + processName,

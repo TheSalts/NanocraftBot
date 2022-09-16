@@ -22,13 +22,14 @@ module.exports = {
     ),
   async execute(interaction, logchannel, alertchn) {
     const Discord = require("discord.js");
+    const quick = require("../util/quick.js");
     const user = interaction.options.getUser("대상");
     const reason = interaction.options.getString("사유");
     const alertnum = interaction.options.getInteger("경고횟수");
     var threadtime = interaction.options.getInteger("스레드 유지 기간");
     const fs = require("fs");
     if (!interaction.member.roles.cache.some((role) => role.name === "MOD"))
-      return;
+      return quick.sendPermissionErrorEmbed(interaction, "MOD");
     if (alertnum < 0)
       return interaction.reply({
         ephemeral: true,
@@ -42,9 +43,6 @@ module.exports = {
         ephemeral: true,
         content: "스레드 유지 기간은 1~12 이어야 해요.",
       });
-
-    if (!fs.existsSync("./data/badalert.json"))
-      fs.writeFileSync("./data/badalert.json", JSON.stringify([]));
 
     let embed = new Discord.EmbedBuilder()
       .setColor("Red")
@@ -68,15 +66,14 @@ module.exports = {
         }
       );
 
-    let read = fs.readFileSync("./data/badalert.json", "utf8");
-    let readjson = JSON.parse(read);
+    let badalert = quick.readFile("./data/badalert.json");
 
-    for (let i = 0; i < alertnum; i++) await readjson.push(user.id);
+    for (let i = 0; i < alertnum; i++) await badalert.push(user.id);
 
-    fs.writeFileSync("./data/badalert.json", JSON.stringify(readjson));
+    fs.writeFileSync("./data/badalert.json", JSON.stringify(badalert));
 
     async function checkAlert(userid) {
-      let count = readjson.filter((element) => userid === element).length;
+      let count = badalert.filter((element) => userid === element).length;
       return count;
     }
 

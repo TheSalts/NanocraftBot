@@ -16,6 +16,7 @@ const client = new Client({
   ],
   partials: [Partials.Channel, Partials.Message, Partials.GuildMember],
 });
+const quick = require("../util/quick");
 
 client.once("ready", async () => {
   console.log("button/captcha 실행 성공");
@@ -64,7 +65,7 @@ client.on("interactionCreate", (interaction) => {
         )
       )
     )
-      return;
+      return quick.sendPermissionErrorEmbed(interaction, "TRUSTED MEMBER");
     const firstEmbed = new Discord.EmbedBuilder()
       .setDescription("마인크래프트 닉네임을 입력해주세요!")
       .setColor("#B266FF");

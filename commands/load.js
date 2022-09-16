@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const fs = require("fs");
 const Discord = require("discord.js");
+const quick = require("../util/quick.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -37,10 +38,7 @@ module.exports = {
   //     .setAutocomplete(true)
   // ),
   async execute(interaction) {
-    if (!fs.existsSync("./data/load.json"))
-      fs.writeFileSync("./data/load.json", JSON.stringify([]));
-    let read = fs.readFileSync("./data/load.json", "utf8");
-    let load = JSON.parse(read);
+    let load = quick.readFile("./data/load.json");
 
     if (interaction.options.getSubcommand() == "추가") {
       const title = interaction.options.getString("타이틀");

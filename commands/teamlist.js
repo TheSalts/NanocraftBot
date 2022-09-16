@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const quick = require("../util/quick.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -6,13 +7,10 @@ module.exports = {
     .setDescription("나노크래프트 멤버를 확인합니다."),
   async execute(interaction) {
     await interaction.deferReply({ ephemeral: true });
-    const fs = require("fs");
-    if (!fs.existsSync("./data/teamlist.json"))
-      fs.writeFileSync("./data/teamlist.json", []);
     const Discord = require("discord.js");
     const embed = new Discord.EmbedBuilder().setColor("Blue");
-    const read = fs.readFileSync("./data/teamlist.json", "utf8");
-    const list = JSON.parse(read);
+    const list = quick.readFile("./data/teamlist.json");
+
     var emojis = [];
     function emojilist(value) {
       emojis.push(value);

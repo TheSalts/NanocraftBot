@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const quick = require("../util/quick");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -15,13 +16,7 @@ module.exports = {
     const Discord = require("discord.js");
     const lm = interaction.options.getInteger("메시지수");
     if (!interaction.member.roles.cache.some((role) => role.name === "MOD")) {
-      const permissionEmbed = new Discord.EmbedBuilder()
-        .setTitle("에러: 권한이 없습니다.")
-        .setColor("#FF0000");
-      return await interaction.editReply({
-        ephemeral: true,
-        embeds: [permissionEmbed],
-      });
+      return quick.sendPermissionErrorEmbed(interaction, "관리자");
     }
     if (lm < 1)
       return await interaction.reply({

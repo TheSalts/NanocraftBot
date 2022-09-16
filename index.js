@@ -32,6 +32,7 @@ const client = new Client({
     Partials.GuildScheduledEvent,
   ],
 });
+const quick = require("./util/quick");
 
 client.commands = new Collection();
 const commandFiles = fs
@@ -63,17 +64,7 @@ client.on("interactionCreate", async (interaction) => {
     await command.execute(interaction, logchannel, alertchn);
   } catch (error) {
     console.error(error);
-    const errors = new Discord.EmbedBuilder()
-      .setTitle("Error")
-      .setDescription(
-        "에러가 발생했습니다.\n명령어가 잘못되었거나 코드에 문제가 발생했을 수 있습니다.\n" +
-          error.stack
-      )
-      .setColor("#FF0000");
-    return interaction.reply({
-      embeds: [errors],
-      ephemeral: true,
-    });
+    quick.sendErrorEmbed(interaction, error);
   }
 });
 

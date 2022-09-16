@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const Discord = require("discord.js");
+const quick = require("../util/quick");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("rcon")
@@ -25,13 +26,7 @@ module.exports = {
       )
     ) {
     } else {
-      const permissionEmbed = new Discord.EmbedBuilder()
-        .setTitle("에러: 권한이 없습니다.")
-        .setColor("#FF0000");
-      return await interaction.reply({
-        ephemeral: true,
-        embeds: [permissionEmbed],
-      });
+      return quick.sendPermissionErrorEmbed("NANOCRAFT SMP");
     }
 
     const config = require("../config.json");

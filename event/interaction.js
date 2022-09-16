@@ -30,6 +30,7 @@ const client = new Client({
   ],
 });
 const fs = require("fs");
+const quick = require("../util/quick");
 
 client.login(config.token);
 
@@ -53,10 +54,7 @@ client.on("interactionCreate", async (interaction) => {
  * @param {Discord.SelectMenuInteraction} interaction
  */
 async function selectMenu(interaction) {
-  if (!fs.existsSync("../data/vote.json"))
-    fs.writeFileSync("../data/vote.json", JSON.stringify([]));
-  let read = fs.readFileSync("../data/vote.json", "utf8");
-  let vote = JSON.parse(read);
+  let vote = quick.readFile("../data/vote.json");
 
   if (vote.length === 0)
     switch (interaction.customId) {
@@ -83,17 +81,9 @@ async function selectMenu(interaction) {
     }
 
   async function votes(num) {
-    if (!fs.existsSync("../data/voteResult.json"))
-      fs.writeFileSync("../data/voteResult.json", JSON.stringify([]));
-    if (!fs.existsSync("../data/voted.json")) {
-      fs.writeFileSync("../data/voted.json", JSON.stringify([]));
-    }
+    var voted = quick.readFile("../data/voted.json");
 
-    let readvoted = fs.readFileSync("../data/voted.json", "utf8");
-    var voted = await JSON.parse(readvoted);
-
-    let readResult = fs.readFileSync("../data/voteResult.json", "utf8");
-    var voteResult = await JSON.parse(readResult);
+    var voteResult = quick.readFile("../data/voteResult.json");
 
     if (interaction.values.length != 1) var selected = interaction.values;
     else var selected = interaction.values[0];
@@ -296,14 +286,7 @@ async function selectMenu(interaction) {
   async function stopvote() {
     let seed = interaction.values[0];
 
-    if (!fs.existsSync("../data/voteResult.json"))
-      fs.writeFileSync("../data/voteResult.json", JSON.stringify([]));
-    if (!fs.existsSync("../data/voted.json")) {
-      fs.writeFileSync("../data/voted.json", JSON.stringify([]));
-    }
-
-    let readVote = fs.readFileSync("../data/vote.json", "utf8");
-    var vote = JSON.parse(readVote);
+    var vote = quick.readFile("../data/vote.json");
 
     if (vote.length < 1)
       return interaction.reply({
@@ -323,11 +306,9 @@ async function selectMenu(interaction) {
       }
     }
 
-    let readvoted = fs.readFileSync("../data/voted.json", "utf8");
-    var voted = await JSON.parse(readvoted);
+    var voted = quick.readFile("../data/voted.json");
 
-    let readResult = fs.readFileSync("../data/voteResult.json", "utf8");
-    var voteresult = await JSON.parse(readResult);
+    var voteresult = quick.readFile("../data/voteResult.json");
 
     let votedList = [];
     for (let i = 0; i < voteresult.length; i++) {
@@ -422,8 +403,7 @@ async function selectMenu(interaction) {
 
   async function searchresult() {
     await interaction.deferReply({ ephemeral: true });
-    let read = fs.readFileSync("../data/search.json", "utf8");
-    let search = JSON.parse(read);
+    let search = quick.readFile("../data/search.json");
     for (let i = 0; i < search.length; i++) {
       for (let j = 0; j < search[i].length; j++) {
         if (
@@ -630,8 +610,7 @@ async function button(interaction) {
       await interaction.showModal(otherModal);
       break;
     case "publicTicket":
-      let read = fs.readFileSync("../data/publicCategory.json", "utf8");
-      let publicCategory = JSON.parse(read);
+      let publicCategory = quick.readFile("../data/publicCategory.json");
 
       function getPublicCategory() {
         let categoryCheck = undefined;
@@ -730,10 +709,7 @@ async function button(interaction) {
 
       getPublicCategory().number++;
 
-      if (!fs.existsSync("../data/publicChannel.json"))
-        fs.writeFileSync("../data/publicChannel.json", JSON.stringify([]));
-      let read2 = fs.readFileSync("../data/publicChannel.json", "utf8");
-      let publicChannel = JSON.parse(read2);
+      let publicChannel = quick.readFile("../data/publicChannel.json");
 
       publicChannel.push({
         public: channel,
@@ -756,13 +732,7 @@ async function button(interaction) {
       });
       break;
     case "closePublicChannel":
-      if (!fs.existsSync("../data/publicChannel.json"))
-        fs.writeFileSync("../data/publicChannel.json", JSON.stringify([]));
-      let closepublicread = fs.readFileSync(
-        "../data/publicChannel.json",
-        "utf8"
-      );
-      let closepublicChannels = JSON.parse(closepublicread);
+      let closepublicChannels = quick.readFile("../data/publicChannel.json");
       let getClosePublicChannels = getPropFromChannelRead(
         closepublicChannels,
         interaction.channelId
@@ -801,13 +771,7 @@ async function button(interaction) {
       });
       break;
     case "openPublicChannel":
-      if (!fs.existsSync("../data/publicChannel.json"))
-        fs.writeFileSync("../data/publicChannel.json", JSON.stringify([]));
-      let openpublicread = fs.readFileSync(
-        "../data/publicChannel.json",
-        "utf8"
-      );
-      let openpublicChannels = JSON.parse(openpublicread);
+      let openpublicChannels = quick.readFile("../data/publicChannel.json");
       let getOpenPublicChannels = getPropFromChannelRead(
         openpublicChannels,
         interaction.channelId
@@ -830,10 +794,7 @@ async function button(interaction) {
       });
       break;
     case "deletePublicChannel":
-      if (!fs.existsSync("../data/publicChannel.json"))
-        fs.writeFileSync("../data/publicChannel.json", JSON.stringify([]));
-      let publicread = fs.readFileSync("../data/publicChannel.json", "utf8");
-      let publicChannels = JSON.parse(publicread);
+      let publicChannels = quick.readFile("../data/publicChannel.json");
 
       let deleteId = [];
       for (let i = 0; i < publicChannels.length; i++) {
@@ -933,9 +894,7 @@ async function button(interaction) {
 function autocomplete(interaction) {
   switch (interaction.commandName) {
     case "리플레이":
-      let readprojectList = JSON.parse(
-        fs.readFileSync("../data/projects.json", "utf8")
-      );
+      let readprojectList = quick.readFile("../data/projects.json");
       let list = [];
       for (let project of readprojectList) {
         list.push({
@@ -1130,14 +1089,7 @@ async function modal(interaction) {
  * @param {string} userid
  */
 module.exports.stopvote = async function (seed, userid) {
-  if (!fs.existsSync("../data/voteResult.json"))
-    fs.writeFileSync("../data/voteResult.json", JSON.stringify([]));
-  if (!fs.existsSync("../data/voted.json")) {
-    fs.writeFileSync("../data/voted.json", JSON.stringify([]));
-  }
-
-  let readVote = fs.readFileSync("../data/vote.json", "utf8");
-  var vote = JSON.parse(readVote);
+  var vote = quick.readFile("../data/vote.json");
 
   if (vote.length < 1) throw new Error("Invalid vote");
 
@@ -1149,11 +1101,9 @@ module.exports.stopvote = async function (seed, userid) {
     }
   }
 
-  let readvoted = fs.readFileSync("../data/voted.json", "utf8");
-  var voted = await JSON.parse(readvoted);
+  var voted = quick.readFile("../data/voted.json");
 
-  let readResult = fs.readFileSync("../data/voteResult.json", "utf8");
-  var voteresult = await JSON.parse(readResult);
+  var voteresult = quick.readFile("../data/voteResult.json");
 
   let votedList = [];
   for (let i = 0; i < voteresult.length; i++) {

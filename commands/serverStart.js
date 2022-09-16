@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const quick = require("../util/quick");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -28,7 +29,10 @@ module.exports = {
         )
       )
     )
-      return;
+      return quick.sendPermissionErrorEmbed(
+        interaction,
+        "NANOCRAFT SMP | Trial Member"
+      );
 
     const row = new Discord.ActionRowBuilder().addComponents(
       new Discord.ButtonBuilder()

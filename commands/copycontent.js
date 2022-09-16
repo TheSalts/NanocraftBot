@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const quick = require("../util/quick.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -40,6 +41,14 @@ module.exports = {
       });
       return;
     }
+    if (
+      !(
+        interaction.member.roles.cache.some((role) => role.name === "MOD") ||
+        interaction.member.roles.cache.some((role) => role.name === "STAFF")
+      )
+    ) {
+      return quick.sendPermissionErrorEmbed(interaction, "관리자");
+    }
     await interaction.reply(
       "채널에서 메시지를 가져오는 중이에요...\n메시지를 업로드하는 동안 스레드에서 다른 메시지를 하지 말아주세요!"
     );
@@ -50,20 +59,6 @@ module.exports = {
     const role = interaction.options.getRole("역할");
     const desc = interaction.options.getString("설명");
     const trial = interaction.options.getUser("투표멤버");
-    if (
-      !(
-        interaction.member.roles.cache.some((role) => role.name === "MOD") ||
-        interaction.member.roles.cache.some((role) => role.name === "STAFF")
-      )
-    ) {
-      const permissionEmbed = new Discord.EmbedBuilder()
-        .setTitle("에러: 권한이 없습니다.")
-        .setColor("#FF0000");
-      return await interaction.editReply({
-        ephemeral: true,
-        embeds: [permissionEmbed],
-      });
-    }
 
     let limit = 100;
     if (lm) {

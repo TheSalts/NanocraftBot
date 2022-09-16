@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const quick = require("../util/quick.js");
 
 module.exports.data = new SlashCommandBuilder()
   .setName("투표")
@@ -97,15 +98,9 @@ function getVoteOption() {
 }
 
 async function execute(interaction) {
-  if (!fs.existsSync("./data/votetime.json"))
-    fs.writeFileSync("./data/votetime.json", JSON.stringify([]));
-  if (!fs.existsSync("./data/vote.json"))
-    fs.writeFileSync("./data/vote.json", JSON.stringify([]));
   sel = [];
-  let read = fs.readFileSync("./data/vote.json", "utf8");
-  let voteList = JSON.parse(read);
-  let readvotetime = fs.readFileSync("./data/votetime.json", "utf8");
-  let votetime = JSON.parse(readvotetime);
+  let voteList = quick.readFile("./data/vote.json");
+  let votetime = quick.readFile("./data/votetime.json");
   let canvote = "";
   let votecooltime = 0;
 
@@ -213,9 +208,6 @@ async function execute(interaction) {
       } else selmsg = selmsg + `${i + 1}. ${sel[i]}\n`;
     }
 
-    if (!fs.existsSync("./data/vote.json"))
-      fs.writeFileSync("./data/vote.json", JSON.stringify([]));
-
     let seed = getSeed();
 
     var max = 1;
@@ -261,11 +253,8 @@ async function execute(interaction) {
         });
 
         fs.writeFileSync("./data/vote.json", JSON.stringify(voteList));
-        if (!fs.existsSync("./data/voteResult.json"))
-          fs.writeFileSync("./data/voteResult.json", JSON.stringify([]));
 
-        let readvote = fs.readFileSync("./data/voteResult.json", "utf8");
-        let voted = JSON.parse(readvote);
+        let voted = quick.readFile("./data/voteResult.json");
         let votelist = [];
         for (let i = 0; i < sel.length; i++) {
           votelist.push({ name: sel[i], value: 0 });
@@ -283,8 +272,7 @@ async function execute(interaction) {
 
     // 종료
   } else if (interaction.options.getSubcommand() === "종료") {
-    let read = fs.readFileSync("./data/vote.json", "utf8");
-    let vote = JSON.parse(read);
+    let vote = quick.readFile("./data/vote.json");
 
     if (!interaction.member.roles.cache.some((role) => role.name === "MOD")) {
       var list = [];
@@ -372,10 +360,7 @@ async function execute(interaction) {
 }
 
 module.exports.vote = async function (user, channel, voteuserid, voteusername) {
-  if (!fs.existsSync("./data/votetime.json"))
-    fs.writeFileSync("./data/votetime.json", JSON.stringify([]));
-  let read = fs.readFileSync("./data/vote.json", "utf8");
-  let voteList = JSON.parse(read);
+  let voteList = quick.readFile("./data/vote.json");
 
   sel = [];
   const topic = `${user.username}님의 멤버 신청`;
@@ -398,9 +383,6 @@ module.exports.vote = async function (user, channel, voteuserid, voteusername) {
         });
     } else selmsg = selmsg + `${i + 1}. ${sel[i]}\n`;
   }
-
-  if (!fs.existsSync("./data/vote.json"))
-    fs.writeFileSync("./data/vote.json", JSON.stringify([]));
 
   let seed = getSeed();
   let max = 1;
@@ -442,11 +424,8 @@ module.exports.vote = async function (user, channel, voteuserid, voteusername) {
       });
 
       fs.writeFileSync("./data/vote.json", JSON.stringify(voteList));
-      if (!fs.existsSync("./data/voteResult.json"))
-        fs.writeFileSync("./data/voteResult.json", JSON.stringify([]));
 
-      let readvote = fs.readFileSync("./data/voteResult.json", "utf8");
-      let voted = JSON.parse(readvote);
+      let voted = quick.readFile("./data/voteResult.json");
       let votelist = [];
       for (let i = 0; i < sel.length; i++) {
         votelist.push({ name: sel[i], value: 0 });

@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { file } = require("googleapis/build/src/apis/file");
+const quick = require("../util/quick");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -64,38 +65,27 @@ module.exports = {
       if (
         interaction.member.roles.cache.some(
           (role) => role.name === "NANOCRAFT SMP"
-        )
-      ) {
-      } else if (
+        ) ||
         interaction.member.roles.cache.some(
           (role) => role.name === "Trial Member"
-        )
-      ) {
-      } else if (
+        ) ||
         interaction.member.roles.cache.some((role) => role.name === "MOD")
       ) {
       } else {
-        const permissionEmbed = new Discord.EmbedBuilder()
-          .setTitle("에러: 권한이 없습니다.")
-          .setColor("#FF0000");
-        return await interaction.editReply({
-          ephemeral: true,
-          embeds: [permissionEmbed],
-        });
+        return quick.sendPermissionErrorEmbed(interaction, "MOD");
       }
 
       if (!fs.existsSync("./data/projects.json"))
         fs.writeFileSync("./data/projects.json", JSON.stringify([]));
       const name = interaction.options.getString("이름");
       const execute = interaction.options.getString("동작");
-      let read = fs.readFileSync("./config.json", "utf8");
-      let readconfig = JSON.parse(read);
-      let readproject = fs.readFileSync("./data/projects.json", "utf8");
-      let project = JSON.parse(readproject);
+      let config = quick.readFile("../config.json");
+
+      let project = quick.readFile("./data/projects.json");
       if (execute == "실행") {
         for (let projects of project) {
           if (projects.name == name) {
-            readconfig.project = projects.id;
+            config.project = projects.id;
             await interaction.editReply(
               `**${projects.name}** 프로젝트가 활성화되었어요.`
             );
@@ -104,11 +94,11 @@ module.exports = {
         }
       } else if (execute == "중단") {
         await interaction.editReply(`프로젝트가 중단되었어요.`);
-        readconfig.project = "";
+        config.project = "";
       } else if (execute == "추가") {
         await createfolder();
       }
-      fs.writeFileSync("./config.json", JSON.stringify(readconfig));
+      fs.writeFileSync("./config.json", JSON.stringify(config));
       fs.writeFileSync("./data/projects.json", JSON.stringify(project));
 
       async function createfolder() {

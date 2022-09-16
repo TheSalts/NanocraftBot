@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const config = require("../config.json");
+const quick = require("../util/quick");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -41,23 +42,19 @@ module.exports = {
         )
     ),
   async execute(interaction) {
+    if (!interaction.member.roles.cache.some((role) => role.name === "MOD"))
+      return quick.sendPermissionErrorEmbed(interaction, "MOD");
+
     await interaction.deferReply({ ephemeral: true });
     const Discord = require("discord.js");
     const fs = require("fs");
     const util = require("minecraft-server-util");
-    const permissionEmbed = new Discord.EmbedBuilder()
-      .setTitle("에러: 권한이 없습니다.")
-      .setColor("#FF0000");
-    if (!interaction.member.roles.cache.some((role) => role.name === "MOD"))
-      return await interaction.editReply({ embeds: [permissionEmbed] });
+
     const nickname = interaction.options.getString("닉네임");
     const addOrdelete = interaction.options.getString("등록여부");
     const address = interaction.options.getString("서버");
 
-    if (!fs.existsSync("./data/teamlist.json"))
-      fs.writeFileSync("./data/teamlist.json", []);
-    const read = fs.readFileSync("./data/teamlist.json", "utf8");
-    const list = JSON.parse(read);
+    const list = quick.readFile("./data/teamlist.json");
 
     const infoEmbed = new Discord.EmbedBuilder()
       .setColor("Green")

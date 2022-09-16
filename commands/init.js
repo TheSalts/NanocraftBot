@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const Discord = require("discord.js");
 const fs = require("fs");
+const quick = require("../util/quick.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -16,10 +17,7 @@ module.exports = {
         PermissionsBitField.Flags.ManageChannels
       )
     )
-      return interaction.reply({
-        ephemeral: true,
-        content: "관리 권한이 필요합니다",
-      });
+      return quick.sendPermissionErrorEmbed(interaction, "채널 관리 권한");
 
     //초기설정 여러번
     if (fs.existsSync("./data/publicCategory.json")) {
@@ -86,10 +84,7 @@ module.exports = {
         .setStyle(Discord.ButtonStyle.Secondary)
         .setEmoji("📩")
     );
-    if (!fs.existsSync("./data/publicCategory.json"))
-      fs.writeFileSync("./data/publicCategory.json", JSON.stringify([]));
-    let read = fs.readFileSync("./data/publicCategory.json", "utf8");
-    let publicCategory = JSON.parse(read);
+    let publicCategory = quick.readFile("./data/publicCategory.json");
     publicCategory.push({
       guildId: interaction.guildId,
       category: category,

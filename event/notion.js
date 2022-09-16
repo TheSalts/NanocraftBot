@@ -1,6 +1,7 @@
 const { token } = require("../config.json");
 const Discord = require("discord.js");
 const config = require("../config.json");
+const quick = require("../util/quick");
 
 const { GatewayIntentBits, Partials } = require("discord.js");
 const client = new Discord.Client({
@@ -50,10 +51,7 @@ async function getData() {
     },
   });
   for (let data of response.results) {
-    if (!fs.existsSync("../data/notionData.json"))
-      fs.writeFileSync("../data/notionData.json", JSON.stringify([]));
-    let readfile = fs.readFileSync("../data/notionData.json", "utf8");
-    let notionData = JSON.parse(readfile);
+    let notionData = quick.readFile("../data/notionData.json");
 
     if (notionData.find((element) => element === data.id)) break;
 
