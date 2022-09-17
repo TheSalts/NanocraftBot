@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const quick = require("../util/quick.js");
+const schedule = require("../util/schedule.js");
 
 module.exports.data = new SlashCommandBuilder()
   .setName("투표")
@@ -65,7 +66,6 @@ module.exports.data = new SlashCommandBuilder()
 module.exports.execute = execute;
 
 const Discord = require("discord.js");
-const wait = require("node:timers/promises").setTimeout;
 const fs = require("fs");
 
 var sel = [];
@@ -263,11 +263,15 @@ async function execute(interaction) {
         voted.push({ seed: seed.toString(), voted: votelist });
 
         fs.writeFileSync("./data/voteResult.json", JSON.stringify(voted));
-        if (term != 0)
-          wait(1000 * 60 * 60 * term).then(() => {
-            let { stopvote } = require("../event/interaction.js");
-            stopvote(seed, interaction.member.user.id);
-          });
+        if (term != 0) {
+          let { stopvote } = require("../event/interaction.js");
+          let nowDate = new Date();
+          nowDate.setTime(nowDate.getHours() + term);
+          schedule.schedule(
+            nowDate,
+            await stopvote(seed, interaction.member.user.id)
+          );
+        }
       });
 
     // 종료
@@ -434,10 +438,14 @@ module.exports.vote = async function (user, channel, voteuserid, voteusername) {
       voted.push({ seed: seed.toString(), voted: votelist });
 
       fs.writeFileSync("./data/voteResult.json", JSON.stringify(voted));
-      if (term != 0)
-        wait(1000 * 60 * 60 * term).then(() => {
-          let { stopvote } = require("../menu.js");
-          stopvote(seed, interaction.member.user.id);
-        });
+      if (term != 0) {
+        let { stopvote } = require("../menu.js");
+        let nowDate = new Date();
+        nowDate.setTile(nowDate.getHours() + term);
+        schedule.schedule(
+          nowDate,
+          await stopvote(seed, interaction.member.user.id)
+        );
+      }
     });
 };
