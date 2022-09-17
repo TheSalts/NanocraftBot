@@ -59,18 +59,18 @@ module.exports = {
       array = await translateEmbed();
       if (msg.content) {
         array.push(Textembed);
-        await interaction.reply({
+        return await interaction.reply({
           embeds: array,
           content: `${res.text}`,
           ephemeral: true,
         });
-      } else
-        await interaction.reply({
+      } else {
+        return await interaction.reply({
           embeds: array,
           content: `${res.text}`,
           ephemeral: true,
         });
-      return;
+      }
     }
 
     async function translateEmbed() {

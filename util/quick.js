@@ -24,11 +24,12 @@ module.exports = {
   },
   /**
    * @description Send Embed when user has no permission
+   * @type async function
    * @param {Discord.Interaction|Discord.Channel|Discord.User} place 임베드를 보낼 곳
    * @param {string} permissionName 권한 이름
    * @returns {Discord.Message}
    */
-  sendPermissionErrorEmbed: function (place, permissionName) {
+  sendPermissionErrorEmbed: async function (place, permissionName) {
     let embed;
     if (permissionName) {
       embed = new Discord.EmbedBuilder()
@@ -45,9 +46,9 @@ module.exports = {
     }
     return place.channel
       ? place.isRepliable()
-        ? place.reply({ embeds: [embed], ephemeral: true })
-        : place.followUp({ embeds: [embed], ephemeral: true })
-      : place.send({ embeds: [embed] });
+        ? await place.reply({ embeds: [embed], ephemeral: true })
+        : await place.followUp({ embeds: [embed], ephemeral: true })
+      : await place.send({ embeds: [embed] });
   },
   /**
    * @description Get an Error Embed
@@ -65,11 +66,12 @@ module.exports = {
   },
   /**
    * @description Send an Error Embed
+   * @type async function
    * @param {Discord.Interaction|Discord.Channel|Discord.User} place 임베드를 보낼 곳
    * @param {Error} error
    * @returns {Discord.Message}
    */
-  sendErrorEmbed: function (place, error) {
+  sendErrorEmbed: async function (place, error) {
     if (!error) throw new Error(`Param "error" is not an Error object`);
     let embed = new Discord.EmbedBuilder()
       .setTitle("Error")
@@ -79,9 +81,9 @@ module.exports = {
       );
     return place.channel
       ? place.isRepliable()
-        ? place.reply({ embeds: [embed], ephemeral: true })
-        : place.followUp({ embeds: [embed], ephemeral: true })
-      : place.send({ embeds: [embed] });
+        ? await place.reply({ embeds: [embed], ephemeral: true })
+        : await place.followUp({ embeds: [embed], ephemeral: true })
+      : await place.send({ embeds: [embed] });
   },
   /**
    * @deprecated

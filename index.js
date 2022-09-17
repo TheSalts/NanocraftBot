@@ -56,7 +56,7 @@ client.once("ready", () => {
 });
 
 client.on("interactionCreate", async (interaction) => {
-  if (!interaction.type === Discord.InteractionType.ApplicationCommand) return;
+  if (!interaction.isCommand()) return;
 
   const logchannel = interaction.guild.channels.cache.find(
     (channel) => channel.name === "🔒│captcha-log"
@@ -70,21 +70,6 @@ client.on("interactionCreate", async (interaction) => {
 
   try {
     await command.execute(interaction, logchannel, alertchn);
-  } catch (error) {
-    console.error(error);
-    quick.sendErrorEmbed(interaction, error);
-  }
-});
-
-client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isContextMenuCommand()) return;
-
-  let command = client.commands.get(interaction.commandName);
-
-  if (!command) return;
-
-  try {
-    await command.execute(interaction);
   } catch (error) {
     console.error(error);
     quick.sendErrorEmbed(interaction, error);

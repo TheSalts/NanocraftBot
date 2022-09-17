@@ -40,14 +40,10 @@ client.once("ready", () => {
 });
 
 client.on("interactionCreate", async (interaction) => {
-  if (
-    interaction.type === Discord.InteractionType.ApplicationCommandAutocomplete
-  )
-    autocomplete(interaction);
+  if (interaction.isAutocomplete()) autocomplete(interaction);
   else if (interaction.isSelectMenu()) await selectMenu(interaction);
   else if (interaction.isButton()) await button(interaction);
-  else if (interaction.type == InteractionType.ModalSubmit)
-    await modal(interaction);
+  else if (interaction.isModalSubmit()) await modal(interaction);
 });
 /**
  * @type async function
