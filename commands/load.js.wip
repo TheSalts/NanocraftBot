@@ -38,7 +38,7 @@ module.exports = {
   //     .setAutocomplete(true)
   // ),
   async execute(interaction) {
-    let load = quick.readFile("./data/load.json");
+    let load = util.readFile("./data/load.json");
 
     if (interaction.options.getSubcommand() == "추가") {
       const title = interaction.options.getString("타이틀");

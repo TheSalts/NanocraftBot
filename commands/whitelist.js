@@ -54,7 +54,7 @@ module.exports = {
     const addOrdelete = interaction.options.getString("등록여부");
     const address = interaction.options.getString("서버");
 
-    const list = quick.readFile("./data/teamlist.json");
+    const list = util.readFile("./data/teamlist.json");
 
     const infoEmbed = new Discord.EmbedBuilder()
       .setColor("Green")

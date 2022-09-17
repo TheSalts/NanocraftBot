@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { file } = require("googleapis/build/src/apis/file");
 const quick = require("../util/quick");
+const util = require("../util/util");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -79,9 +80,9 @@ module.exports = {
         fs.writeFileSync("./data/projects.json", JSON.stringify([]));
       const name = interaction.options.getString("이름");
       const execute = interaction.options.getString("동작");
-      let config = quick.readFile("../config.json");
+      let config = util.readFile("../config.json");
 
-      let project = quick.readFile("./data/projects.json");
+      let project = util.readFile("../data/projects.json");
       if (execute == "실행") {
         for (let projects of project) {
           if (projects.name == name) {

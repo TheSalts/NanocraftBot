@@ -43,6 +43,14 @@ for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
   client.commands.set(command.data.name, command);
 }
+const contextCommandFiles = fs
+  .readdirSync("./contextMenu")
+  .filter((file) => file.endsWith(".js"));
+
+for (const file of contextCommandFiles) {
+  const command = require(`./contextMenu/${file}`);
+  client.commands.set(command.data.name, command);
+}
 client.once("ready", () => {
   console.log("Command Ready!");
 });
@@ -56,12 +64,27 @@ client.on("interactionCreate", async (interaction) => {
   const alertchn = interaction.guild.channels.cache.find(
     (channel) => channel.name === "⛔│제재"
   );
-  const command = client.commands.get(interaction.commandName);
+  let command = client.commands.get(interaction.commandName);
 
   if (!command) return;
 
   try {
     await command.execute(interaction, logchannel, alertchn);
+  } catch (error) {
+    console.error(error);
+    quick.sendErrorEmbed(interaction, error);
+  }
+});
+
+client.on("interactionCreate", async (interaction) => {
+  if (!interaction.isContextMenuCommand()) return;
+
+  let command = client.commands.get(interaction.commandName);
+
+  if (!command) return;
+
+  try {
+    await command.execute(interaction);
   } catch (error) {
     console.error(error);
     quick.sendErrorEmbed(interaction, error);

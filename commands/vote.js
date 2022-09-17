@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const quick = require("../util/quick.js");
-const schedule = require("node-schedule");
+const util = require("../util/util");
 
 module.exports.data = new SlashCommandBuilder()
   .setName("투표")
@@ -267,9 +267,11 @@ async function execute(interaction) {
           let { stopvote } = require("../event/interaction.js");
           let nowDate = new Date();
           nowDate.setTime(nowDate.getHours() + term);
-          schedule.scheduleJob(
+          util.schedule(
             nowDate,
-            await stopvote(seed, interaction.member.user.id)
+            await stopvote(),
+            seed,
+            interaction.member.user.id
           );
         }
       });
@@ -442,9 +444,11 @@ module.exports.vote = async function (user, channel, voteuserid, voteusername) {
         let { stopvote } = require("../menu.js");
         let nowDate = new Date();
         nowDate.setTile(nowDate.getHours() + term);
-        schedule.scheduleJob(
+        util.schedule(
           nowDate,
-          await stopvote(seed, interaction.member.user.id)
+          await stopvote(),
+          seed,
+          interaction.member.user.id
         );
       }
     });

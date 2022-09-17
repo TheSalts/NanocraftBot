@@ -4,6 +4,7 @@ const config = require("../config.json");
 const { Client, GatewayIntentBits, Partials } = require("discord.js");
 const fs = require("fs");
 const quick = require("../util/quick");
+const util = require("../util/util");
 const wait = require("node:timers/promises").setTimeout;
 const client = new Client({
   intents: [
@@ -19,7 +20,7 @@ client.once("ready", () => {
 });
 
 client.on("messageCreate", async (message) => {
-  for (let channel of quick.readFile("../data/publicChannel.json")) {
+  for (let channel of util.readFile("../data/publicChannel.json")) {
     if (message.channelId === channel.public.id) {
       await sendMessage(
         message.guild.channels.cache.get(channel.nanocraft.id),

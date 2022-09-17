@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const wait = require("node:timers/promises").setTimeout;
+const util = require("../util/util");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -66,7 +67,7 @@ module.exports = {
         }
       );
 
-    let badalert = quick.readFile("./data/badalert.json");
+    let badalert = util.readFile("./data/badalert.json");
 
     for (let i = 0; i < alertnum; i++) await badalert.push(user.id);
 

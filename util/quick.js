@@ -83,4 +83,17 @@ module.exports = {
         : place.followUp({ embeds: [embed], ephemeral: true })
       : place.send({ embeds: [embed] });
   },
+  /**
+   * @deprecated
+   * @description read file and if file does not exist, write file
+   * @param {string} path 파일 위치
+   * @returns
+   */
+  readFile: function (path) {
+    if (typeof path !== "string")
+      throw new Error(`Path must be string, not ${typeof path}`);
+    if (!fs.existsSync(path)) fs.writeFileSync(path, JSON.stringify([]));
+    let read = fs.readFileSync(path, "utf8");
+    return JSON.parse(read);
+  },
 };

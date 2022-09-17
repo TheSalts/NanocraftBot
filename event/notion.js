@@ -2,6 +2,7 @@ const { token } = require("../config.json");
 const Discord = require("discord.js");
 const config = require("../config.json");
 const quick = require("../util/quick");
+const util = require("../util/util");
 
 const { GatewayIntentBits, Partials } = require("discord.js");
 const client = new Discord.Client({
@@ -51,7 +52,7 @@ async function getData() {
     },
   });
   for (let data of response.results) {
-    let notionData = quick.readFile("../data/notionData.json");
+    let notionData = util.readFile("../data/notionData.json");
 
     if (notionData.find((element) => element === data.id)) break;
 
