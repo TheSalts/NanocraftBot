@@ -88,6 +88,8 @@ module.exports = {
           ssh
             .execCommand(`screen -S ${instance} -X stuff '${command}\n'`)
             .then(async (result) => {
+              console.log(result.stdout);
+              console.log(result.stderr);
               let outEmbed = new Discord.EmbedBuilder()
                 .setDescription("명령어를 성공적으로 실행했습니다.")
                 .addFields(
@@ -98,12 +100,12 @@ module.exports = {
                   },
                   {
                     name: "stdout",
-                    value: `${result.stdout ?? "없음"}`,
+                    value: `${result.stdout || "없음"}`,
                     inline: true,
                   },
                   {
                     name: "stderr",
-                    value: `${result.stderr ?? "없음"}`,
+                    value: `${result.stderr || "없음"}`,
                     inline: true,
                   }
                 )
