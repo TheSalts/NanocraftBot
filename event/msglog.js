@@ -46,7 +46,7 @@ client.on("messageCreate", async (message) => {
       break;
     }
   }
-  if (message.channel.name === "✅│퍼블릭-서버") {
+  if (message.channel.name === "✅│야생-서버") {
     if (
       !message.author.bot &&
       !message.member.roles.cache.some((role) => role.name === "MOD") &&

@@ -70,7 +70,7 @@ module.exports = {
       parent: category,
     });
     let publicServer = await interaction.guild.channels.create({
-      name: "✅│퍼블릭-서버",
+      name: "✅│야생-서버",
       type: Discord.ChannelType.GuildText,
       parent: category,
     });
