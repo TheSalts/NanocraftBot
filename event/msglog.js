@@ -5,6 +5,7 @@ const { Client, GatewayIntentBits, Partials } = require("discord.js");
 const fs = require("fs");
 const quick = require("../util/quick");
 const util = require("../util/util");
+const { channel } = require("diagnostics_channel");
 const wait = require("node:timers/promises").setTimeout;
 const client = new Client({
   intents: [
@@ -17,6 +18,14 @@ const client = new Client({
 
 client.once("ready", () => {
   console.log("Message Ready!");
+});
+
+// 파일 상태 확인
+client.on("interactionCreate", async (interaction) => {
+  if (!interaction.isButton()) return;
+  if (interaction.customId !== "checkAPIstatus") return;
+  let channel = client.channels.cache.get("1020706773549715607");
+  await channel.send(`${__filename} 작동 중  |  ${new Date().toISOString()}`);
 });
 
 client.on("messageCreate", async (message) => {
@@ -35,6 +44,25 @@ client.on("messageCreate", async (message) => {
         true
       );
       break;
+    }
+  }
+  if (message.channel.name === "✅│퍼블릭-서버") {
+    if (
+      !message.author.bot &&
+      !message.member.roles.cache.some((role) => role.name === "MOD") &&
+      !message.member.roles.cache.some((role) => role.name === "STAFF")
+    ) {
+      if (!message.content?.startsWith("!!"))
+        return await message
+          .reply(
+            `안녕하세요 <@${message.author.id}>님!\n<#${message.channelId}>에서는 \`!!resgister\` 명령어만 사용할 수 있어요.\n\n__이 메시지는 5초 뒤에 자동으로 삭제돼요.__`
+          )
+          .then((msg) => {
+            message.delete();
+            wait(5 * 1000).then(() => {
+              msg.delete();
+            });
+          });
     }
   }
   if (message.guild !== client.guilds.cache.get("987045537595420752")) return;

@@ -39,6 +39,14 @@ client.once("ready", () => {
   console.log("interaction ready");
 });
 
+// 파일 상태 확인
+client.on("interactionCreate", async (interaction) => {
+  if (!interaction.isButton()) return;
+  if (interaction.customId !== "checkAPIstatus") return;
+  let channel = client.channels.cache.get("1020706773549715607");
+  await channel.send(`${__filename} 작동 중  |  ${new Date().toISOString()}`);
+});
+
 client.on("interactionCreate", async (interaction) => {
   if (interaction.isAutocomplete()) autocomplete(interaction);
   else if (interaction.isSelectMenu()) await selectMenu(interaction);
@@ -823,6 +831,37 @@ async function button(interaction) {
 
       await client.channels.cache.get(deleteId[0]).delete();
       await client.channels.cache.get(deleteId[1]).delete();
+      break;
+    case "deleteAPIstatus":
+      let APIchannel = client.channels.cache.get("1020706773549715607");
+      try {
+        await APIchannel.bulkDelete(100).then();
+      } catch (e) {
+        if (e.name === "DiscordAPIError[50034]") {
+          let APIEmbeds = new Discord.EmbedBuilder()
+            .setTitle("메시지 삭제 실패")
+            .setColor("Red")
+            .setDescription(`2주일이 지난 메시지는 삭제할 수 없어요.`);
+          return await APIchannel.send({
+            ephemeral: true,
+            embeds: [APIEmbeds],
+          });
+        }
+      }
+      const APIstatusEmbed = new Discord.EmbedBuilder().setTitle(
+        "API status check"
+      );
+      const APIrow = new Discord.ActionRowBuilder().addComponents(
+        new Discord.ButtonBuilder()
+          .setCustomId("checkAPIstatus")
+          .setLabel("API status")
+          .setStyle(Discord.ButtonStyle.Success),
+        new Discord.ButtonBuilder()
+          .setCustomId("deleteAPIstatus")
+          .setLabel("delete API status")
+          .setStyle(Discord.ButtonStyle.Danger)
+      );
+      APIchannel.send({ embeds: [APIstatusEmbed], components: [APIrow] });
       break;
   }
   /**

@@ -41,6 +41,7 @@
     "node-google-drive": "^1.1.2",
     "node-html-parser": "^6.0.0",
     "node-schedule": "^2.1.0",
+    "node-ssh": "^13.0.0",
     "node-zip": "^1.1.1",
     "ps-list": "^8.1.0",
     "quick.db": "^9.0.2",

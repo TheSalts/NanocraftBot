@@ -29,19 +29,29 @@ client.once("ready", async () => {
   async function sendMessage() {
     let channel = client.channels.cache.get("1018439245192515624");
     let sendEmbed = await getData();
-    if (!sendEmbed) return;
+    if (!sendEmbed) return console.log("no page detected, return");
+    console.log("new page detected, sending message");
     await channel.send({ embeds: [sendEmbed] });
   }
-  setInterval(sendMessage, 10 * 1000);
+  setInterval(sendMessage, 15 * 1000);
 });
 
 client.login(token);
+
+// 파일 상태 확인
+client.on("interactionCreate", async (interaction) => {
+  if (!interaction.isButton()) return;
+  if (interaction.customId !== "checkAPIstatus") return;
+  let channel = client.channels.cache.get("1020706773549715607");
+  await channel.send(`${__filename} 작동 중  |  ${new Date().toISOString()}`);
+});
 
 /**
  * @description notion api에서 데이터를 불러옵니다
  * @returns {Discord.Embed} Discord Embed
  */
 async function getData() {
+  console.log("cheking database...");
   let time = new Date();
   const databaseId = "d6b58a25dfb3459a9be3f8f7fc4ce8f1";
   const response = await notion.databases.query({
@@ -65,39 +75,34 @@ async function getData() {
       notionData.push(data.id);
       fs.writeFileSync("../data/notionData.json", JSON.stringify(notionData));
 
-      let title = data.properties.이름.title[0]?.plain_text;
+      let title = data.properties.이름.title[0]?.plain_text ?? "비어 있음";
       let Author = {
-        name: data.properties["작업 책임자"].people[0]?.name,
-        iconURL: data.properties["작업 책임자"].people[0]?.avatar_url,
+        name: data.properties["작업 책임자"].people[0]?.name ?? "비어 있음",
       };
+      if (data.properties["작업 책임자"].people[0]?.avatar_url)
+        Author.iconURL = data.properties["작업 책임자"].people[0]?.avatar_url;
       let fields = [
         {
           name: "작업 상태",
-          value: data.properties["작업 상태"].select?.name,
+          value: data.properties["작업 상태"].select?.name ?? "비어 있음",
           inline: true,
         },
         {
           name: "문서 종류",
-          value: data.properties["문서 종류"].select?.name,
+          value: data.properties["문서 종류"].select?.name ?? "비어 있음",
           inline: true,
         },
         {
           name: "우선순위",
-          value: data.properties["우선순위"].select?.name,
+          value: data.properties["우선순위"].select?.name ?? "비어 있음",
           inline: true,
         },
         {
           name: "유형",
-          value: data.properties["유형"].select?.name,
+          value: data.properties["유형"].select?.name ?? "비어 있음",
           inline: true,
         },
       ];
-      if (!title) title = "비어 있음";
-      if (!Author.name) Author.name = "비어 있음";
-      if (!Author.iconURL) Author.iconURL = "비어 있음";
-      fields.forEach((field) => {
-        if (!field.value) field.value = "비어 있음";
-      });
       const Embed = new Discord.EmbedBuilder()
         .setTitle(title)
         .setAuthor(Author)

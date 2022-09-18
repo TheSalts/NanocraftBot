@@ -9,6 +9,14 @@ const client = new Client({
 
 client.login(config.token);
 
+// 파일 상태 확인
+client.on("interactionCreate", async (interaction) => {
+  if (!interaction.isButton()) return;
+  if (interaction.customId !== "checkAPIstatus") return;
+  let channel = client.channels.cache.get("1020706773549715607");
+  await channel.send(`${__filename} 작동 중  |  ${new Date().toISOString()}`);
+});
+
 const rp = require("request-promise");
 const option1 = "creative.nanocraft.kr";
 const option2 = "smp.nanocraft.kr";
