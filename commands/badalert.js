@@ -22,6 +22,7 @@ module.exports = {
         .setRequired(false)
     ),
   async execute(interaction, logchannel, alertchn) {
+    const path = require("path");
     const Discord = require("discord.js");
     const quick = require("../util/quick.js");
     const user = interaction.options.getUser("대상");
@@ -67,7 +68,7 @@ module.exports = {
         }
       );
 
-    let badalert = util.readFile("./data/badalert.json");
+    let badalert = util.readFile(path.resolve("./data/badalert.json"));
 
     for (let i = 0; i < alertnum; i++) await badalert.push(user.id);
 

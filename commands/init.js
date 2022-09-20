@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const Discord = require("discord.js");
 const fs = require("fs");
+const path = require("path");
 const quick = require("../util/quick.js");
 const util = require("../util/util");
 
@@ -85,7 +86,9 @@ module.exports = {
         .setStyle(Discord.ButtonStyle.Secondary)
         .setEmoji("📩")
     );
-    let publicCategory = util.readFile("./data/publicCategory.json");
+    let publicCategory = util.readFile(
+      path.resolve("./data/publicCategory.json")
+    );
     publicCategory.push({
       guildId: interaction.guildId,
       category: category,

@@ -6,6 +6,7 @@ const fs = require("fs");
 const quick = require("../util/quick");
 const util = require("../util/util");
 const { channel } = require("diagnostics_channel");
+const path = require("path");
 const wait = require("node:timers/promises").setTimeout;
 const client = new Client({
   intents: [
@@ -29,7 +30,9 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 client.on("messageCreate", async (message) => {
-  for (let channel of util.readFile("../data/publicChannel.json")) {
+  for (let channel of util.readFile(
+    path.resolve("../data/publicChannel.json")
+  )) {
     if (message.channelId === channel.public.id) {
       await sendMessage(
         message.guild.channels.cache.get(channel.nanocraft.id),

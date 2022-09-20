@@ -17,6 +17,7 @@ const client = new Discord.Client({
 const fs = require("fs");
 
 const { Client } = require("@notionhq/client");
+const path = require("path");
 
 const notion = new Client({ auth: config.notionApiKey });
 
@@ -62,7 +63,7 @@ async function getData() {
     },
   });
   for (let data of response.results) {
-    let notionData = util.readFile("../data/notionData.json");
+    let notionData = util.readFile(path.resolve("../data/notionData.json"));
 
     if (notionData.find((element) => element === data.id)) break;
 

@@ -20,7 +20,7 @@ module.exports = {
   },
   /**
    * @description read file and if file does not exist, write file
-   * @param {string} path 파일 위치
+   * @param {NodeJS.RequireResolve} path 파일 위치
    * @returns
    */
   readFile: function (path) {

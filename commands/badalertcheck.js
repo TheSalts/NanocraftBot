@@ -3,6 +3,7 @@ const fs = require("fs");
 const Discord = require("discord.js");
 const quick = require("../util/quick.js");
 const util = require("../util/util");
+const path = require("path");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -12,7 +13,7 @@ module.exports = {
       option.setName("대상").setDescription("대상").setRequired(false)
     ),
   async execute(interaction) {
-    let badalert = util.readFile("./data/badalert.json");
+    let badalert = util.readFile(path.resolve("./data/badalert.json"));
     const useroption = interaction.options.getUser("대상");
 
     if (useroption) var user = useroption;

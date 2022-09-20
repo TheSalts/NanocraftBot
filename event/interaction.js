@@ -32,6 +32,7 @@ const client = new Client({
 const fs = require("fs");
 const quick = require("../util/quick");
 const util = require("../util/util");
+const path = require("path");
 
 client.login(config.token);
 
@@ -59,7 +60,7 @@ client.on("interactionCreate", async (interaction) => {
  * @param {Discord.SelectMenuInteraction} interaction
  */
 async function selectMenu(interaction) {
-  let vote = util.readFile("../data/vote.json");
+  let vote = util.readFile(path.resolve("../data/vote.json"));
 
   if (vote.length === 0)
     switch (interaction.customId) {
@@ -86,9 +87,9 @@ async function selectMenu(interaction) {
     }
 
   async function votes(num) {
-    var voted = util.readFile("../data/voted.json");
+    var voted = util.readFile(path.resolve("../data/voted.json"));
 
-    var voteResult = util.readFile("../data/voteResult.json");
+    var voteResult = util.readFile(path.resolve("../data/voteResult.json"));
 
     if (interaction.values.length != 1) var selected = interaction.values;
     else var selected = interaction.values[0];
@@ -291,7 +292,7 @@ async function selectMenu(interaction) {
   async function stopvote() {
     let seed = interaction.values[0];
 
-    var vote = util.readFile("../data/vote.json");
+    var vote = util.readFile(path.resolve("../data/vote.json"));
 
     if (vote.length < 1)
       return interaction.reply({
@@ -311,9 +312,9 @@ async function selectMenu(interaction) {
       }
     }
 
-    var voted = util.readFile("../data/voted.json");
+    var voted = util.readFile(path.resolve("../data/voted.json"));
 
-    var voteresult = util.readFile("../data/voteResult.json");
+    var voteresult = util.readFile(path.resolve("../data/voteResult.json"));
 
     let votedList = [];
     for (let i = 0; i < voteresult.length; i++) {
@@ -408,7 +409,7 @@ async function selectMenu(interaction) {
 
   async function searchresult() {
     await interaction.deferReply({ ephemeral: true });
-    let search = util.readFile("../data/search.json");
+    let search = util.readFile(path.resolve("../data/search.json"));
     for (let i = 0; i < search.length; i++) {
       for (let j = 0; j < search[i].length; j++) {
         if (
@@ -615,7 +616,9 @@ async function button(interaction) {
       await interaction.showModal(otherModal);
       break;
     case "publicTicket":
-      let publicCategory = util.readFile("../data/publicCategory.json");
+      let publicCategory = util.readFile(
+        path.resolve("../data/publicCategory.json")
+      );
 
       function getPublicCategory() {
         let categoryCheck = undefined;
@@ -714,7 +717,9 @@ async function button(interaction) {
 
       getPublicCategory().number++;
 
-      let publicChannel = util.readFile("../data/publicChannel.json");
+      let publicChannel = util.readFile(
+        path.resolve("../data/publicChannel.json")
+      );
 
       publicChannel.push({
         public: channel,
@@ -737,7 +742,9 @@ async function button(interaction) {
       });
       break;
     case "closePublicChannel":
-      let closepublicChannels = util.readFile("../data/publicChannel.json");
+      let closepublicChannels = util.readFile(
+        path.resolve("../data/publicChannel.json")
+      );
       let getClosePublicChannels = getPropFromChannelRead(
         closepublicChannels,
         interaction.channelId
@@ -776,7 +783,9 @@ async function button(interaction) {
       });
       break;
     case "openPublicChannel":
-      let openpublicChannels = util.readFile("../data/publicChannel.json");
+      let openpublicChannels = util.readFile(
+        path.resolve("../data/publicChannel.json")
+      );
       let getOpenPublicChannels = getPropFromChannelRead(
         openpublicChannels,
         interaction.channelId
@@ -799,7 +808,9 @@ async function button(interaction) {
       });
       break;
     case "deletePublicChannel":
-      let publicChannels = util.readFile("../data/publicChannel.json");
+      let publicChannels = util.readFile(
+        path.resolve("../data/publicChannel.json")
+      );
 
       let deleteId = [];
       for (let i = 0; i < publicChannels.length; i++) {
@@ -930,7 +941,9 @@ async function button(interaction) {
 function autocomplete(interaction) {
   switch (interaction.commandName) {
     case "리플레이":
-      let readprojectList = util.readFile("../data/projects.json");
+      let readprojectList = util.readFile(
+        path.resolve("../data/projects.json")
+      );
       let list = [];
       for (let project of readprojectList) {
         list.push({
@@ -1125,7 +1138,7 @@ async function modal(interaction) {
  * @param {string} userid
  */
 module.exports.stopvote = async function (seed, userid) {
-  var vote = util.readFile("../data/vote.json");
+  var vote = util.readFile(path.resolve("../data/vote.json"));
 
   if (vote.length < 1) throw new Error("Invalid vote");
 
@@ -1137,9 +1150,9 @@ module.exports.stopvote = async function (seed, userid) {
     }
   }
 
-  var voted = util.readFile("../data/voted.json");
+  var voted = util.readFile(path.resolve("../data/voted.json"));
 
-  var voteresult = util.readFile("../data/voteResult.json");
+  var voteresult = util.readFile(path.resolve("../data/voteResult.json"));
 
   let votedList = [];
   for (let i = 0; i < voteresult.length; i++) {

@@ -74,6 +74,7 @@ function addsel(value) {
 }
 
 var crypto = require("crypto");
+const path = require("path");
 
 function getSeed() {
   let cryptoData = Math.random();
@@ -99,8 +100,8 @@ function getVoteOption() {
 
 async function execute(interaction) {
   sel = [];
-  let voteList = quick.readFile("./data/vote.json");
-  let votetime = quick.readFile("./data/votetime.json");
+  let voteList = quick.readFile(path.resolve("./data/vote.json"));
+  let votetime = quick.readFile(path.resolve("./data/votetime.json"));
   let canvote = "";
   let votecooltime = 0;
 
