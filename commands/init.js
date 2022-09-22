@@ -20,7 +20,7 @@ module.exports = {
       )
     )
       return quick.sendPermissionErrorEmbed(interaction, "채널 관리 권한");
-
+    await interaction.deferReply({ ephemeral: true });
     //초기설정 여러번
     if (fs.existsSync("./data/publicCategory.json")) {
       let reads = fs.readFileSync("./data/publicCategory.json", "utf8");
@@ -99,15 +99,9 @@ module.exports = {
       "./data/publicCategory.json",
       JSON.stringify(publicCategory)
     );
-    if (interaction.replied)
-      await interaction.followUp({
-        ephemeral: true,
-        content: `설정이 완료되었습니다.\n<#${category.id}>\n<#${partnerDiscord.id}>\n<#${publicNotice.id}>\n<#${publicPatch.id}>\n<#${publicServer.id}>`,
-      });
-    else
-      await interaction.reply({
-        ephemeral: true,
-        content: `설정이 완료되었습니다.\n<#${category.id}>\n<#${partnerDiscord.id}>\n<#${publicNotice.id}>\n<#${publicPatch.id}>\n<#${publicServer.id}>`,
-      });
+    await interaction.editReply({
+      ephemeral: true,
+      content: `설정이 완료되었습니다.\n<#${category.id}>\n<#${partnerDiscord.id}>\n<#${publicNotice.id}>\n<#${publicPatch.id}>\n<#${publicServer.id}>`,
+    });
   },
 };
