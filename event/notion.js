@@ -23,16 +23,25 @@ const notion = new Client({ auth: config.notionApiKey });
 
 const startAt = new Date();
 startAt.toISOString();
-console.log(startAt.getTime());
 
 client.once("ready", async () => {
   console.log("Notion SDK Ready!");
   async function sendMessage() {
-    let channel = client.channels.cache.get("1018439245192515624");
-    let sendEmbed = await getData();
-    if (!sendEmbed) return console.log("no page detected, return");
-    console.log("new page detected, sending message");
-    await channel.send({ embeds: [sendEmbed] });
+    /**
+     * @type {Discord.ForumChannel}
+     */
+    let channel = client.channels.cache.get("1022476510839459880");
+    let sendData = await getData();
+    if (!sendData) return console.log("no page detected, return");
+    else console.log("new page detected, sending message");
+    let thread = await channel.threads.create({
+      name: sendData[0].Title,
+      message: { embeds: [sendData[1]] },
+      appliedTags: [sendData[0].Tag],
+    });
+    for (let msg of sendData[2]) {
+      if (msg) await thread.send(msg);
+    }
   }
   setInterval(sendMessage, 15 * 1000);
 });
@@ -49,7 +58,7 @@ client.on("interactionCreate", async (interaction) => {
 
 /**
  * @description notion api에서 데이터를 불러옵니다
- * @returns {Discord.Embed} Discord Embed
+ * @returns {[ { Title, Author, Fields, URL, Tag }, Embed, [String]]}
  */
 async function getData() {
   console.log("cheking database...");
@@ -84,11 +93,6 @@ async function getData() {
         Author.iconURL = data.properties["작업 책임자"].people[0]?.avatar_url;
       let fields = [
         {
-          name: "작업 상태",
-          value: data.properties["작업 상태"].select?.name ?? "비어 있음",
-          inline: true,
-        },
-        {
           name: "문서 종류",
           value: data.properties["문서 종류"].select?.name ?? "비어 있음",
           inline: true,
@@ -107,16 +111,96 @@ async function getData() {
       const Embed = new Discord.EmbedBuilder()
         .setTitle(title)
         .setAuthor(Author)
-        .setFields(fields[0], fields[1], fields[2], fields[3])
+        .setFields(fields[0], fields[1], fields[2])
         .setURL(data.url)
-        .setColor("Random")
+        .setColor("#36393F")
         .setFooter({
           text: "Notion",
           iconURL:
             "https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png",
         })
         .setTimestamp(new Date(data.created_time).getTime());
-      return Embed;
-    }
+      let tag;
+      switch (data.properties["작업 상태"].select?.name) {
+        case "진행 전":
+          tag = "1022479350152572978";
+          // {
+          //   id: '1022479350152572978',
+          //   name: '진행전 🔴',
+          //   moderated: false,
+          //   emoji: null
+          // },
+          break;
+        case "작업 완료":
+          tag = "1022479381916041226";
+          // {
+          //   id: '1022479381916041226',
+          //   name: '작업 완료 ✅',
+          //   moderated: false,
+          //   emoji: null
+          // },
+          break;
+        case "진행 중":
+          tag = "1022479410126925824";
+          // {
+          //   id: '1022479410126925824',
+          //   name: '진행중 🔧',
+          //   moderated: false,
+          //   emoji: null
+          // }
+          break;
+        case "To Do":
+          tag = "1022479350152572978";
+          // {
+          //   id: '1022479350152572978',
+          //   name: '진행전 🔴',
+          //   moderated: false,
+          //   emoji: null
+          // },
+          break;
+      }
+      let pageData = await getPageDataToMsg(data.id);
+      return [
+        {
+          Title: title,
+          Author: Author,
+          Fields: fields,
+          URL: data.url,
+          Tag: tag,
+        },
+        Embed,
+        pageData,
+      ];
+    } else return null;
   }
+}
+
+/**
+ * @param {string} id
+ * @returns {Array}
+ */
+async function getPageDataToMsg(id) {
+  const response = await notion.blocks.children.list({ block_id: id });
+  let array = [];
+  let message = "";
+  for (let data of response.results) {
+    let dataArray = Object.keys(data);
+    let lastDataName = dataArray[dataArray.length - 1];
+    let lastData = data[`${lastDataName}`];
+    if (lastData.rich_text)
+      message = message + lastData.rich_text[0].text.content + "\n";
+    else if (lastData.title) message + lastData.title + "\n";
+    else if (lastData.url) {
+      array.push(message);
+      message = "";
+      message = message + lastData.url + "\n";
+    } else if (lastData.external) {
+      array.push(message);
+      message = "";
+      message = message + lastData.external.url + "\n";
+    } else if (lastData.expression)
+      message = message + `\`${lastData.expression}\`` + "\n";
+  }
+  array.push(message);
+  return array;
 }
