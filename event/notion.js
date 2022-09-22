@@ -187,9 +187,45 @@ async function getPageDataToMsg(id) {
     let dataArray = Object.keys(data);
     let lastDataName = dataArray[dataArray.length - 1];
     let lastData = data[`${lastDataName}`];
-    if (lastData.rich_text)
-      message = message + lastData.rich_text[0].text.content + "\n";
-    else if (lastData.title) message + lastData.title + "\n";
+    if (lastData.rich_text) {
+      switch (lastDataName) {
+        case "toggle":
+          message = message + " · " + lastData.rich_text[0].text.content + "\n";
+          break;
+        case "quote":
+          message = message + "> " + lastData.rich_text[0].text.content + "\n";
+          break;
+        case "to_do":
+          if (data.to_do.checked === true) {
+            message =
+              message + "☑ " + data.to_do.rich_text[0].text.content + "\n";
+          } else {
+            message =
+              message + "☐ " + data.to_do.rich_text[0].text.content + "\n";
+          }
+          break;
+        case "code":
+          if (data.code.language) {
+            message =
+              message +
+              `\`\`\`${data.code.language}\n` +
+              data.to_do.rich_text[0].text.content +
+              "\n```" +
+              "\n";
+          } else {
+            message =
+              message +
+              "```\n" +
+              data.to_do.rich_text[0].text.content +
+              "\n```" +
+              "\n";
+          }
+          break;
+        default:
+          message = message + lastData.rich_text[0].text.content + "\n";
+          break;
+      }
+    } else if (lastData.title) message + lastData.title + "\n";
     else if (lastData.url) {
       array.push(message);
       message = "";
