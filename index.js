@@ -37,7 +37,7 @@ const quick = require("./util/quick");
 client.commands = new Collection();
 const commandFiles = fs
   .readdirSync("./commands")
-  .filter((file) => file.endsWith(".js"));
+  .filter((file) => file.endsWith(".js") && !file.startsWith("!"));
 
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
@@ -45,7 +45,7 @@ for (const file of commandFiles) {
 }
 const contextCommandFiles = fs
   .readdirSync("./contextMenu")
-  .filter((file) => file.endsWith(".js"));
+  .filter((file) => file.endsWith(".js") && !file.startsWith("!"));
 
 for (const file of contextCommandFiles) {
   const command = require(`./contextMenu/${file}`);
