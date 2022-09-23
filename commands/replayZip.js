@@ -257,11 +257,11 @@ module.exports = {
         let project = JSON.parse(
           fs.readFileSync("./data/projects.json", "utf8")
         );
-        let projectname = "None";
-        let projectid = "";
+        let projectname = "";
+        let projectid = "1l1jatTkGWFV-XsLk-MasMV17QHtmWPeg";
         for (let pj of project) {
           if (pj.id == readconfig.project) {
-            projectname = pj.name;
+            projectname = pj.name + " ";
             projectid = pj.id;
             break;
           }
@@ -272,13 +272,13 @@ module.exports = {
         const embed = new Discord.EmbedBuilder()
           .setTitle(projectname)
           .setDescription(
-            `[${projectname} 링크](${url})를 생성했어요.\n전체 파일 다운로드 방법:`
+            `[${projectname}링크](${url})를 생성했어요.\n전체 파일 다운로드 방법:`
           )
           .setColor("#33FF99")
           .setURL(url)
           .setTimestamp()
           .setImage("https://i.imgur.com/o3oSddy.png");
-        interaction.member.user
+        await interaction.member.user
           .send({ embeds: [embed] })
           .then((msg) => {
             interaction.editReply({
@@ -323,6 +323,7 @@ module.exports = {
         ephemeral: true,
         content: "파일을 업로드 중이에요...",
       });
+
       fs.readFile("./data/credentials.json", (err, content) => {
         if (err) return console.log("Error loading client secret file:", err);
         authorize(JSON.parse(content), storeFiles, fileSizeInMegabytes);
