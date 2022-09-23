@@ -31,9 +31,20 @@ module.exports = {
             .setRequired(true)
             .addChoices(
               { name: "실행", value: "실행" },
-              { name: "중단", value: "중단" },
-              { name: "추가", value: "추가" }
+              { name: "중단", value: "중단" }
             )
+        )
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("프로젝트생성")
+        .setDescription("프로젝트생성")
+        .addStringOption((option) =>
+          option
+            .setName("이름")
+            .setDescription("이름")
+            .setRequired(true)
+            .setAutocomplete(true)
         )
     ),
   async execute(interaction /*,logchannel*/) {
@@ -61,6 +72,127 @@ module.exports = {
       await download();
     } else if (interaction.options.getSubcommand() === "프로젝트") {
       await project();
+    } else if (interaction.options.getSubcommand() === "프로젝트생성") {
+      await createProject();
+    }
+
+    async function createProject() {
+      if (
+        interaction.member.roles.cache.some(
+          (role) => role.name === "NANOCRAFT SMP"
+        ) ||
+        interaction.member.roles.cache.some(
+          (role) => role.name === "Trial Member"
+        ) ||
+        interaction.member.roles.cache.some((role) => role.name === "MOD")
+      ) {
+      } else {
+        return quick.sendPermissionErrorEmbed(interaction, "MOD");
+      }
+      const name = interaction.options.getString("이름");
+      await createfolder(name);
+    }
+
+    async function createfolder(name) {
+      let readproject = util.readFile(path.resolve("./data/projects.json"));
+      for (let project of readproject) {
+        if (project.name == name)
+          return await interaction.editReply(
+            "이미 존재하는 프로젝트에요. 이름을 바꿔서 다시 시도해 주세요."
+          );
+      }
+      fs.readFile("./data/credentials.json", (err, content) => {
+        if (err) return console.log("Error loading client secret file:", err);
+        authorize(JSON.parse(content), storeFolder);
+      });
+      function storeFolder(auth) {
+        const drive = google.drive({ version: "v3", auth });
+        var fileMetadata = {
+          name: name,
+          mimeType: "application/vnd.google-apps.folder",
+          parents: ["1l1jatTkGWFV-XsLk-MasMV17QHtmWPeg"],
+        };
+        drive.files.create(
+          {
+            resource: fileMetadata,
+            fields: "id",
+          },
+          function (err, file) {
+            if (err) {
+              // Handle error
+              console.error(err);
+            } else {
+              const resource = { role: "reader", type: "anyone" };
+              drive.permissions.create(
+                { fileId: file.data.id, resource: resource },
+                (error, result) => {
+                  if (error) return console.error(error);
+                }
+              );
+              interaction.editReply(
+                `프로젝트 **${name}**이(가) 추가되었어요. (id: "${file.data.id}")`
+              );
+              let readprojects = fs.readFileSync(
+                "./data/projects.json",
+                "utf8"
+              );
+              let pj = JSON.parse(readprojects);
+              pj.push({ name: name, id: file.data.id });
+              fs.writeFileSync("./data/projects.json", JSON.stringify(pj));
+            }
+          }
+        );
+      }
+      async function authorize(credentials, callback, filesize) {
+        const { client_secret, client_id, redirect_uris } = credentials.web;
+        const oAuth2Client = new google.auth.OAuth2(
+          client_id,
+          client_secret,
+          redirect_uris[0]
+        );
+
+        fs.readFile(TOKEN_PATH, (err, token) => {
+          if (err) {
+            return getAccessToken(oAuth2Client, callback);
+          }
+          oAuth2Client.setCredentials(JSON.parse(token));
+          oAuth2Client.refreshAccessToken((err, tokens) => {
+            oAuth2Client.setCredentials({
+              access_token: tokens.access_token,
+            });
+            let read = fs.readFileSync("./data/token.json", "utf8");
+            let tokenfile = JSON.parse(read);
+            tokenfile.access_token = tokens.access_token;
+            fs.writeFileSync("./data/token.json", JSON.stringify(tokenfile));
+            storeFolder(oAuth2Client, filesize);
+          });
+        });
+      }
+      function getAccessToken(oAuth2Client, callback) {
+        const authUrl = oAuth2Client.generateAuthUrl({
+          access_type: "offline",
+          scope: SCOPES,
+        });
+        console.log("Authorize this app by visiting this url:", authUrl);
+        const rl = readline.createInterface({
+          input: process.stdin,
+          output: process.stdout,
+        });
+        rl.question("Enter the code from that page here: ", (code) => {
+          rl.close();
+
+          oAuth2Client.getToken(code, (err, token) => {
+            if (err) return console.error("Error retrieving access token", err);
+            oAuth2Client.setCredentials(token);
+            // Store the token to disk for later program executions
+            fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
+              if (err) return console.error(err);
+              console.log("Token stored to", TOKEN_PATH);
+            });
+            callback(oAuth2Client);
+          });
+        });
+      }
     }
 
     async function project() {
@@ -97,114 +229,10 @@ module.exports = {
       } else if (execute == "중단") {
         await interaction.editReply(`프로젝트가 중단되었어요.`);
         config.project = "";
-      } else if (execute == "추가") {
-        await createfolder();
       }
       fs.writeFileSync("./config.json", JSON.stringify(config));
       fs.writeFileSync("./data/projects.json", JSON.stringify(project));
 
-      async function createfolder() {
-        let readproject = fs.readFileSync("./data/projects.json", "utf8");
-        for (let project of readproject) {
-          if (project.name == name)
-            return await interaction.editReply(
-              "이미 존재하는 프로젝트에요. 이름을 바꿔서 다시 시도해 주세요."
-            );
-        }
-        fs.readFile("./data/credentials.json", (err, content) => {
-          if (err) return console.log("Error loading client secret file:", err);
-          authorize(JSON.parse(content), storeFolder);
-        });
-        function storeFolder(auth) {
-          const drive = google.drive({ version: "v3", auth });
-          var fileMetadata = {
-            name: name,
-            mimeType: "application/vnd.google-apps.folder",
-            parents: ["1l1jatTkGWFV-XsLk-MasMV17QHtmWPeg"],
-          };
-          drive.files.create(
-            {
-              resource: fileMetadata,
-              fields: "id",
-            },
-            function (err, file) {
-              if (err) {
-                // Handle error
-                console.error(err);
-              } else {
-                const resource = { role: "reader", type: "anyone" };
-                drive.permissions.create(
-                  { fileId: file.data.id, resource: resource },
-                  (error, result) => {
-                    if (error) return console.error(error);
-                  }
-                );
-                interaction.editReply(
-                  `프로젝트 **${name}**이(가) 추가되었어요. (id: "${file.data.id}")`
-                );
-                let readprojects = fs.readFileSync(
-                  "./data/projects.json",
-                  "utf8"
-                );
-                let pj = JSON.parse(readprojects);
-                pj.push({ name: name, id: file.data.id });
-                fs.writeFileSync("./data/projects.json", JSON.stringify(pj));
-              }
-            }
-          );
-        }
-        async function authorize(credentials, callback, filesize) {
-          const { client_secret, client_id, redirect_uris } = credentials.web;
-          const oAuth2Client = new google.auth.OAuth2(
-            client_id,
-            client_secret,
-            redirect_uris[0]
-          );
-
-          fs.readFile(TOKEN_PATH, (err, token) => {
-            if (err) {
-              return getAccessToken(oAuth2Client, callback);
-            }
-            oAuth2Client.setCredentials(JSON.parse(token));
-            oAuth2Client.refreshAccessToken((err, tokens) => {
-              oAuth2Client.setCredentials({
-                access_token: tokens.access_token,
-              });
-              let read = fs.readFileSync("./data/token.json", "utf8");
-              let tokenfile = JSON.parse(read);
-              tokenfile.access_token = tokens.access_token;
-              fs.writeFileSync("./data/token.json", JSON.stringify(tokenfile));
-              storeFolder(oAuth2Client, filesize);
-            });
-          });
-        }
-        function getAccessToken(oAuth2Client, callback) {
-          const authUrl = oAuth2Client.generateAuthUrl({
-            access_type: "offline",
-            scope: SCOPES,
-          });
-          console.log("Authorize this app by visiting this url:", authUrl);
-          const rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout,
-          });
-          rl.question("Enter the code from that page here: ", (code) => {
-            rl.close();
-
-            oAuth2Client.getToken(code, (err, token) => {
-              if (err)
-                return console.error("Error retrieving access token", err);
-              oAuth2Client.setCredentials(token);
-              // Store the token to disk for later program executions
-              fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
-                if (err) return console.error(err);
-                console.log("Token stored to", TOKEN_PATH);
-              });
-              callback(oAuth2Client);
-            });
-          });
-        }
-      }
       return;
     }
 
