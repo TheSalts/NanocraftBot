@@ -1,5 +1,6 @@
 const schedule = require("node-cron");
 const fs = require("fs");
+const path = require("path");
 
 module.exports = {
   /**
@@ -20,7 +21,7 @@ module.exports = {
   },
   /**
    * @description read file and if file does not exist, write file
-   * @param {NodeJS.RequireResolve} path 파일 위치
+   * @param {path.PlatformPath} path 파일 위치
    * @returns
    */
   readFile: function (path) {
