@@ -120,7 +120,6 @@ function storeFiles(auth, filename, filepath, filesize) {
         );
         console.log("드라이브에 성공적으로 업로드했습니다. Id: ", file.data.id);
         let sendChannels = client.channels.cache.get(config.sendChannel);
-        let sendchannel2 = client.channels.cache.get("987045539000496143");
         let url = `https://drive.google.com/file/d/${file.data.id}/view?usp=sharing`;
         const embed = new Discord.EmbedBuilder()
           .setTitle("리플레이 업로드 성공")
@@ -141,7 +140,6 @@ function storeFiles(auth, filename, filepath, filesize) {
           }
         }
         sendChannels.send({ embeds: [embed] });
-        sendchannel2.send({ embeds: [embed] });
       }
     }
   );
