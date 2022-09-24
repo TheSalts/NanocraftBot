@@ -250,84 +250,60 @@ module.exports = {
         return; //Trial member || Nanocraft SMP
       if (!fs.existsSync(config.filepath)) fs.mkdirSync(config.filepath);
 
-      const zip = new require("node-zip")();
       let readconfig = JSON.parse(fs.readFileSync("config.json", "utf8"));
 
-      if (readconfig.project) {
-        let project = JSON.parse(
-          fs.readFileSync("./data/projects.json", "utf8")
-        );
-        let projectname = "";
-        let projectid = "1l1jatTkGWFV-XsLk-MasMV17QHtmWPeg";
-        for (let pj of project) {
-          if (pj.id == readconfig.project) {
-            projectname = pj.name + " ";
-            projectid = pj.id;
-            break;
-          }
+      let project = JSON.parse(fs.readFileSync("./data/projects.json", "utf8"));
+      let projectname = "";
+      let projectid = "1l1jatTkGWFV-XsLk-MasMV17QHtmWPeg";
+      for (let pj of project) {
+        if (pj.id == readconfig.project) {
+          projectname = pj.name + " ";
+          projectid = pj.id;
+          break;
         }
+      }
 
-        let url = `https://drive.google.com/drive/folders/${projectid}?usp=sharing`;
+      let pname = projectname || "리플레이";
 
-        const embed = new Discord.EmbedBuilder()
-          .setTitle(projectname)
-          .setDescription(
-            `[${projectname}링크](${url})를 생성했어요.\n전체 파일 다운로드 방법:`
-          )
-          .setColor("#33FF99")
-          .setURL(url)
-          .setTimestamp()
-          .setImage("https://i.imgur.com/o3oSddy.png");
-        await interaction.member.user
-          .send({ embeds: [embed] })
-          .then((msg) => {
-            interaction.editReply({
-              ephemeral: true,
-              content: `파일을 [DM](${msg.url})으로 전송했어요!`,
-            });
-          })
-          .catch(() => {
-            const errEmbed = new Discord.EmbedBuilder()
-              .setTitle("에러: DM을 보낼 수 없습니다.")
-              .setDescription(
-                "개인정보 보호 설정 > 서버 멤버가 보내는 다이렉트 메시지 허용하기를 체크해주셔야 다운로드가 가능합니다."
-              )
-              .setColor("#FF0000")
-              .setImage("https://i.imgur.com/WQlZLmO.png");
-            interaction.editReply({
-              embeds: [errEmbed],
-              ephemeral: true,
-            });
-            deleteFile(file.data.id);
+      let url = `https://drive.google.com/drive/folders/${projectid}?usp=sharing`;
+
+      const embed = new Discord.EmbedBuilder()
+        .setTitle(pname)
+        .setDescription(
+          `[${projectname}링크](${url})를 생성했어요.\n전체 파일 다운로드 방법:`
+        )
+        .setColor("#33FF99")
+        .setURL(url)
+        .setTimestamp()
+        .setImage("https://i.imgur.com/o3oSddy.png");
+      await interaction.member.user
+        .send({ embeds: [embed] })
+        .then((msg) => {
+          interaction.editReply({
+            ephemeral: true,
+            content: `파일을 [DM](${msg.url})으로 전송했어요!`,
           });
-        return;
-      } else
-        chokidar
-          .watch(config.filepath, { ignoreInitial: false })
-          .on("add", (path, event) => {
-            let filename = Path.basename(path);
-            zip.file(filename, fs.readFileSync(path));
+        })
+        .catch(() => {
+          const errEmbed = new Discord.EmbedBuilder()
+            .setTitle("에러: DM을 보낼 수 없습니다.")
+            .setDescription(
+              "개인정보 보호 설정 > 서버 멤버가 보내는 다이렉트 메시지 허용하기를 체크해주셔야 다운로드가 가능합니다."
+            )
+            .setColor("#FF0000")
+            .setImage("https://i.imgur.com/WQlZLmO.png");
+          interaction.editReply({
+            embeds: [errEmbed],
+            ephemeral: true,
           });
+          deleteFile(file.data.id);
+        });
+      return;
 
-      await interaction.editReply({
-        ephemeral: true,
-        content: "파일을 압축하는 중이에요...",
-      });
-      var data = zip.generate({ base64: false, compression: "DEFLATE" });
-      fs.writeFileSync("PCRC.zip", data, "binary");
-      var stats = fs.statSync("PCRC.zip");
-      var fileSizeInBytes = stats.size;
-      var fileSizeInMegabytes = fileSizeInBytes / (1024 * 1024);
-
-      await interaction.editReply({
-        ephemeral: true,
-        content: "파일을 업로드 중이에요...",
-      });
-
-      fs.readFile("./data/credentials.json", (err, content) => {
-        if (err) return console.log("Error loading client secret file:", err);
-        authorize(JSON.parse(content), storeFiles, fileSizeInMegabytes);
-      });
+      // fs.readFile("./data/credentials.json", (err, content) => {
+      //   if (err) return console.log("Error loading client secret file:", err);
+      //   authorize(JSON.parse(content), storeFiles, fileSizeInMegabytes);
+      // });
 
       // google drive
       async function authorize(credentials, callback, filesize) {
