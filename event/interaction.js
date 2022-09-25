@@ -33,6 +33,7 @@ const fs = require("fs");
 const quick = require("../util/quick");
 const util = require("../util/util");
 const path = require("path");
+const notion = require("@notionhq/client");
 
 client.login(config.token);
 
@@ -1129,6 +1130,67 @@ async function modal(interaction) {
           return interaction.reply({ embeds: [e] });
         });
       break;
+    case "uploadNotion":
+      const pageTitle = interaction.fields.getTextInputValue("pagetitle");
+      let pageType = interaction.fields.getTextInputValue("pagetype");
+      const pageDes = interaction.fields.getTextInputValue("pagedescription");
+      const pageFileUrl = interaction.fields.getTextInputValue("pageurl");
+      const Notion = new notion.Client({ auth: config.notionApiKey });
+      const parentId = "706896a8c12640c4b3c7b5890efdcccd";
+
+      let option = {
+        parent: {
+          type: "database_id",
+          database_id: parentId,
+        },
+        properties: {
+          Name: {
+            title: [
+              {
+                text: {
+                  content: pageTitle,
+                },
+              },
+            ],
+          },
+          "문의 유형": {
+            select: {
+              name: pageType.trimEnd() + " 문의",
+            },
+          },
+        },
+        children: [
+          {
+            type: "file",
+            //...other keys excluded
+            file: {
+              type: "external",
+              external: {
+                url: pageFileUrl,
+              },
+            },
+          },
+        ],
+      };
+      if (pageDes) {
+        option.children.push({
+          object: "block",
+          paragraph: {
+            rich_text: [
+              {
+                text: {
+                  content: pageDes,
+                },
+              },
+            ],
+          },
+        });
+      }
+
+      const response = await Notion.pages.create(option);
+      console.log(response);
+
+      break;
   }
 }
 
@@ -1138,7 +1200,7 @@ async function modal(interaction) {
  * @param {string} userid
  */
 module.exports.stopvote = async function (seed, userid) {
-  var vote = util.readFile(path.resolve("../data/vote.json"));
+  var vote = util.readFile("../data/vote.json");
 
   if (vote.length < 1) throw new Error("Invalid vote");
 
@@ -1150,9 +1212,9 @@ module.exports.stopvote = async function (seed, userid) {
     }
   }
 
-  var voted = util.readFile(path.resolve("../data/voted.json"));
+  var voted = util.readFile("../data/voted.json");
 
-  var voteresult = util.readFile(path.resolve("../data/voteResult.json"));
+  var voteresult = util.readFile("../data/voteResult.json");
 
   let votedList = [];
   for (let i = 0; i < voteresult.length; i++) {
@@ -1229,8 +1291,7 @@ module.exports.stopvote = async function (seed, userid) {
           fs.writeFileSync("../data/voted.json", JSON.stringify(voted));
         }
     });
-    let readvotetime = fs.readFileSync("../data/votetime.json", "utf8");
-    let votetime = JSON.parse(readvotetime);
+    let votetime = util.readFile("../data/votetime.json");
     for (let i = 0; i < votetime.length; i++) {
       if (votetime.user[i] == userid) votetime.splice(i, 1);
     }
