@@ -31,14 +31,14 @@ module.exports = {
         content: "파일이 올바르지 않습니다.",
       });
     }
-    console.log(interaction.targetMessage.attachments.contentType);
+    const fileURL = interaction.targetMessage.attachments.first().url;
     const uploadModal = new ModalBuilder()
       .setCustomId("uploadNotion")
       .setTitle("노션 업로드");
     const title = new TextInputBuilder()
       .setCustomId("pagetitle")
       .setLabel("제목")
-      .setPlaceholder("제목이 없으면 파일명으로 설정됩니다")
+      .setValue(fileURL.substring(fileURL.lastIndexOf("/") + 1))
       .setStyle(TextInputStyle.Short)
       .setRequired(false);
 
@@ -58,7 +58,7 @@ module.exports = {
       .setCustomId("pagefileurl")
       .setLabel("파일 URL")
       .setStyle(TextInputStyle.Paragraph)
-      .setValue(interaction.targetMessage.attachments[0].url);
+      .setValue(fileURL);
     const titlerow = new ActionRowBuilder().addComponents(title);
     const typerow = new ActionRowBuilder().addComponents(type);
     const desrow = new ActionRowBuilder().addComponents(description);

@@ -1134,7 +1134,7 @@ async function modal(interaction) {
       const pageTitle = interaction.fields.getTextInputValue("pagetitle");
       let pageType = interaction.fields.getTextInputValue("pagetype");
       const pageDes = interaction.fields.getTextInputValue("pagedescription");
-      const pageFileUrl = interaction.fields.getTextInputValue("pageurl");
+      const pageFileUrl = interaction.fields.getTextInputValue("pagefileurl");
       const Notion = new notion.Client({ auth: config.notionApiKey });
       const parentId = "706896a8c12640c4b3c7b5890efdcccd";
 
@@ -1153,7 +1153,7 @@ async function modal(interaction) {
               },
             ],
           },
-          "문의 유형": {
+          문의유형: {
             select: {
               name: pageType.trimEnd() + " 문의",
             },
@@ -1188,7 +1188,10 @@ async function modal(interaction) {
       }
 
       const response = await Notion.pages.create(option);
-      console.log(response);
+      await interaction.reply({
+        ephemeral: true,
+        content: "성공적으로 업로드했습니다.\n" + response.url,
+      });
 
       break;
   }
