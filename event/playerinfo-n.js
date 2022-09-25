@@ -256,6 +256,13 @@ async function loop() {
 client.on("ready", async () => {
   var logchannel = client.channels.cache.get("987045539000496142");
   setchannel(logchannel);
+  await logchannel.messages.fetch().then((messages) => {
+    messages.forEach((msg) =>
+      msg.embeds?.forEach((embed) => {
+        if (embed.title === "NANOCRAFT 서버 상태") msg.delete();
+      })
+    );
+  });
   await logchannel
     .send({
       embeds: [new Discord.EmbedBuilder().setTitle("서버 상태를 불러오는 중")],
