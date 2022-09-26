@@ -215,7 +215,7 @@ module.exports = {
       const execute = interaction.options.getString("동작");
       let config = util.readFile(path.resolve("../config.json"));
 
-      let project = util.readFile("../data/projects.json");
+      let project = util.readFile("./data/projects.json");
       if (execute == "실행") {
         for (let projects of project) {
           if (projects.name == name) {
