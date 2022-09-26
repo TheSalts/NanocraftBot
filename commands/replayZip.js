@@ -213,7 +213,7 @@ module.exports = {
         fs.writeFileSync("./data/projects.json", JSON.stringify([]));
       const name = interaction.options.getString("이름");
       const execute = interaction.options.getString("동작");
-      let config = util.readFile(path.resolve("../config.json"));
+      let config = util.readFile("./config.json");
 
       let project = util.readFile("./data/projects.json");
       if (execute == "실행") {
