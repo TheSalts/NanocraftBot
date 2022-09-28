@@ -41,14 +41,6 @@ client.once("ready", () => {
   console.log("interaction ready");
 });
 
-// 파일 상태 확인
-client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isButton()) return;
-  if (interaction.customId !== "checkAPIstatus") return;
-  let channel = client.channels.cache.get("1020706773549715607");
-  await channel.send(`${__filename} 작동 중  |  ${new Date().toISOString()}`);
-});
-
 client.on("interactionCreate", async (interaction) => {
   if (interaction.isAutocomplete()) autocomplete(interaction);
   else if (interaction.isSelectMenu()) await selectMenu(interaction);
@@ -474,7 +466,46 @@ async function selectMenu(interaction) {
 async function button(interaction) {
   switch (interaction.customId) {
     case "badalert":
-      await badalert();
+      if (!interaction.member.roles.cache.some((role) => role.name === "MOD"))
+        return;
+      let embed = new Discord.EmbedBuilder()
+        .setAuthor({
+          name: interaction.message.embeds[0].author.name,
+          iconURL: interaction.message.author.iconURL,
+        })
+        .setColor("#66FF66")
+        .setTitle("제재 취소됨")
+        .addFields(
+          {
+            name: interaction.message.embeds[0].fields[0].name,
+            value: interaction.message.embeds[0].fields[0].value,
+            inline: true,
+          },
+          {
+            name: interaction.message.embeds[0].fields[1].name,
+            value: interaction.message.embeds[0].fields[1].value,
+            inline: false,
+          }
+        );
+
+      let read = fs.readFileSync("../data/badalert.json", "utf8");
+      let readjson = JSON.parse(read);
+
+      for (
+        let i = 0;
+        i < interaction.message.embeds[0].fields[2].value * 1;
+        i++
+      ) {
+        let index = readjson.indexOf(
+          interaction.message.embeds[0].fields[4].value
+        );
+        if (index > -1) {
+          readjson.splice(index, 1);
+        }
+      }
+      fs.writeFileSync("../data/badalert.json", JSON.stringify(readjson));
+      await interaction.message.edit({ embeds: [embed], components: [] });
+
       break;
     case "bugReport":
       const bugReportModal = new ModalBuilder()
@@ -875,6 +906,54 @@ async function button(interaction) {
       );
       APIchannel.send({ embeds: [APIstatusEmbed], components: [APIrow] });
       break;
+    case "notionSync":
+      const notionSyncModal = new ModalBuilder()
+        .setCustomId("notionSync")
+        .setTitle("노션 페이지 설정");
+      const notionSyncTitle = new TextInputBuilder()
+        .setCustomId("notionSyncTitle")
+        .setLabel("제목")
+        .setValue(interaction.channel.name)
+        .setRequired(false)
+        .setStyle(TextInputStyle.Short);
+      const notionSyncWorkState = new TextInputBuilder()
+        .setCustomId("notionSyncWorkState")
+        .setLabel("작업 상태")
+        .setValue("진행 전 | 진행 중 | 진행 완료 | To Do")
+        .setPlaceholder("진행 전 | 진행 중 | 진행 완료 | To Do")
+        .setStyle(TextInputStyle.Short);
+      const notionSyncPageType = new TextInputBuilder()
+        .setCustomId("notionSyncPageType")
+        .setLabel("문서 종류")
+        .setValue("기획서 | 보고서")
+        .setPlaceholder("기획서 | 보고서")
+        .setStyle(TextInputStyle.Short);
+      const notionSyncType = new TextInputBuilder()
+        .setCustomId("notionSyncType")
+        .setLabel("유형")
+        .setValue(
+          "건축 프로젝트 | 인프라 구축 | 페리미터 | 컨텐츠 제작  | 기타 | 공장 | 맵아트"
+        )
+        .setPlaceholder(
+          "건축 프로젝트 | 인프라 구축 | 페리미터 | 컨텐츠 제작  | 기타 | 공장 | 맵아트"
+        )
+        .setStyle(TextInputStyle.Short);
+      const notionSyncPriority = new TextInputBuilder()
+        .setCustomId("notionSyncPriority")
+        .setLabel("우선순위")
+        .setValue("높음 | 보통 | 낮음 | 기타 | 검토 중")
+        .setPlaceholder("높음 | 보통 | 낮음 | 기타 | 검토 중")
+        .setStyle(TextInputStyle.Short);
+      const notionSyncRow = new ActionRowBuilder().addComponents(
+        notionSyncTitle,
+        notionSyncWorkState,
+        notionSyncPageType,
+        notionSyncType,
+        notionSyncPriority
+      );
+      notionSyncModal.addComponents(notionSyncRow);
+      await interaction.showModal(notionSyncModal);
+      break;
   }
   /**
    * Get data from read file with channel id
@@ -891,47 +970,6 @@ async function button(interaction) {
           return read[i];
       }
     }
-  }
-  async function badalert() {
-    if (!interaction.member.roles.cache.some((role) => role.name === "MOD"))
-      return;
-    let embed = new Discord.EmbedBuilder()
-      .setAuthor({
-        name: interaction.message.embeds[0].author.name,
-        iconURL: interaction.message.author.iconURL,
-      })
-      .setColor("#66FF66")
-      .setTitle("제재 취소됨")
-      .addFields(
-        {
-          name: interaction.message.embeds[0].fields[0].name,
-          value: interaction.message.embeds[0].fields[0].value,
-          inline: true,
-        },
-        {
-          name: interaction.message.embeds[0].fields[1].name,
-          value: interaction.message.embeds[0].fields[1].value,
-          inline: false,
-        }
-      );
-
-    let read = fs.readFileSync("../data/badalert.json", "utf8");
-    let readjson = JSON.parse(read);
-
-    for (
-      let i = 0;
-      i < interaction.message.embeds[0].fields[2].value * 1;
-      i++
-    ) {
-      let index = readjson.indexOf(
-        interaction.message.embeds[0].fields[4].value
-      );
-      if (index > -1) {
-        readjson.splice(index, 1);
-      }
-    }
-    fs.writeFileSync("../data/badalert.json", JSON.stringify(readjson));
-    await interaction.message.edit({ embeds: [embed], components: [] });
   }
 }
 /**
@@ -1193,6 +1231,120 @@ async function modal(interaction) {
         content: "성공적으로 업로드했습니다.\n" + response.url,
       });
 
+      break;
+    case "notionSync":
+      const nsworkState = interaction.fields
+        .getTextInputValue("notionSyncWorkState")
+        .trimEnd();
+      const nsTitle = interaction.fields
+        .getTextInputValue("notionSyncTitle")
+        .trimEnd();
+      const nspageType = interaction.fields
+        .getTextInputValue("notionSyncPageType")
+        .trimEnd();
+      const nsType = interaction.fields
+        .getTextInputValue("notionSyncType")
+        .trimEnd();
+      const nsPriority = interaction.fields
+        .getTextInputValue("notionSyncPriority")
+        .trimEnd();
+      const nsNotion = new notion.Client({ auth: config.notionApiKey });
+      const nsparentId = "d6b58a25dfb3459a9be3f8f7fc4ce8f1";
+
+      let workArray = ["진행 전", "진행 중", "진행 완료", "To Do"];
+      let pagetypeArray = ["기획서", "보고서"];
+      let typeArray = [
+        "건축 프로젝트",
+        "인프라 구축",
+        "페리미터",
+        "컨텐츠 제작",
+        "기타",
+        "공장",
+        "맵아트",
+      ];
+      let priorityArray = ["높음", "보통", "낮음", "기타", "검토 중"];
+      /**
+       *
+       * @param {String} what
+       * @param {Array} array
+       * @returns
+       */
+      let errOpt = async (what, array) => {
+        let errOptEmbed = new Discord.EmbedBuilder()
+          .setTitle("Error: 잘못된 형식")
+          .setColor("Red")
+          .setDescription(
+            `${what}은 ${array.toString} 안에 포함되어야 합니다.`
+          );
+        return await interaction.reply({
+          ephemeral: true,
+          embeds: [errOptEmbed],
+        });
+      };
+      if (!workArray.find((item) => item === nsworkState)) {
+        return errOpt(nsworkState, workArray);
+      }
+      if (!pagetypeArray.find((item) => item === nspageType)) {
+        return errOpt(nspageType, pagetypeArray);
+      }
+      if (!typeArray.find((item) => item === nsType)) {
+        return errOpt(nsType, typeArray);
+      }
+      if (!priorityArray.find((item) => item === nsPriority)) {
+        return errOpt(nsPriority, priorityArray);
+      }
+
+      let nsOption = {
+        parent: {
+          type: "database_id",
+          database_id: nsparentId,
+        },
+        properties: {
+          Name: {
+            title: [
+              {
+                text: {
+                  content: nsTitle ?? "제목 없음",
+                },
+              },
+            ],
+          },
+          "작업 상태": {
+            select: {
+              name: nsworkState,
+            },
+          },
+          "문서 종류": {
+            select: {
+              name: nspageType,
+            },
+          },
+          유형: {
+            select: {
+              name: nsType,
+            },
+          },
+          우선순위: {
+            select: {
+              name: nsPriority,
+            },
+          },
+        },
+      };
+      const nsresponse = await nsNotion.pages.create(nsOption);
+      let SuccessEmbed = new Discord.EmbedBuilder()
+        .setTitle("동기화 성공")
+        .setColor("Green")
+        .setDescription(
+          `스레드가 [노션 페이지](${nsresponse.url})에 연동되었습니다.`
+        );
+      await interaction.reply({ ephemeral: true, embeds: [SuccessEmbed] });
+      await interaction.channel.permissionOverwrites.set([
+        {
+          id: interaction.guild.roles.everyone,
+          allow: [PermissionsBitField.Flags.SendMessages],
+        },
+      ]);
       break;
   }
 }

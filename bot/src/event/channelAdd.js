@@ -19,14 +19,6 @@ client.once("ready", () => {
 
 client.login(token);
 
-// 파일 상태 확인
-client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isButton()) return;
-  if (interaction.customId !== "checkAPIstatus") return;
-  let channel = client.channels.cache.get("1020706773549715607");
-  await channel.send(`${__filename} 작동 중  |  ${new Date().toISOString()}`);
-});
-
 client.on("channelCreate", (channel) => {
   if (channel.guildId !== "987045537595420752") return;
   if (!channel.name.startsWith("ticket-")) return;
@@ -63,4 +55,23 @@ client.on("channelCreate", (channel) => {
       .setStyle(Discord.ButtonStyle.Secondary)
   );
   channel.send({ components: [row, row2], embeds: [Embed] });
+});
+
+client.on("threadCreate", (thread, newly) => {
+  const notionChannelId = "1022476510839459880";
+  console.info(newly);
+  if (thread.parentId !== notionChannelId) return;
+  const Embed = new Discord.EmbedBuilder()
+    .setTitle("노션 동기화")
+    .setDescription(
+      `<#${thread.parentId}>에서는 노션 페이지와 연동해야 스레드를 사용할 수 있어요.\n아래 버튼을 눌러 동기화를 진행해주세요.`
+    )
+    .setColor("#36393F");
+  const row = new Discord.ActionRowBuilder().addComponents(
+    new Discord.ButtonBuilder()
+      .setCustomId("notionSync")
+      .setLabel("동기화")
+      .setStyle(Discord.ButtonStyle.Success)
+  );
+  thread.send({ embeds: [Embed], components: [row] });
 });

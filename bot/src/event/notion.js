@@ -48,14 +48,6 @@ client.once("ready", async () => {
 
 client.login(token);
 
-// 파일 상태 확인
-client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isButton()) return;
-  if (interaction.customId !== "checkAPIstatus") return;
-  let channel = client.channels.cache.get("1020706773549715607");
-  await channel.send(`${__filename} 작동 중  |  ${new Date().toISOString()}`);
-});
-
 /**
  * @description notion api에서 데이터를 불러옵니다
  * @returns {[ { Title, Author, Fields, URL, Tag }, Embed, [String]]}
@@ -176,6 +168,7 @@ async function getData() {
 }
 
 /**
+ * 페이지 내용을 Markdown에 맞는 string으로 불러옵니다
  * @param {string} id
  * @returns {Array}
  */

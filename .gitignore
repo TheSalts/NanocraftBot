@@ -2,4 +2,3 @@ node_modules
 config.json
 data
 .env
-event/.env
