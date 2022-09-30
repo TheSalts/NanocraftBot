@@ -24,7 +24,6 @@ module.exports = {
   },
   /**
    * @description Send Embed when user has no permission
-   * @type async function
    * @param {Discord.Interaction|Discord.Channel|Discord.User} place 임베드를 보낼 곳
    * @param {string} permissionName 권한 이름
    * @returns {Discord.Message}
@@ -44,11 +43,11 @@ module.exports = {
         .setColor("Red")
         .setDescription(`작업을 수행하려면 해당 권한이 필요합니다.`);
     }
-    return place.channel
-      ? place.isRepliable()
-        ? await place.reply({ embeds: [embed], ephemeral: true })
-        : await place.followUp({ embeds: [embed], ephemeral: true })
-      : await place.send({ embeds: [embed] });
+    if (place.channel) {
+      if (place.isRepliable())
+        return await place.reply({ embeds: [embed], ephemeral: true });
+      else return await place.followUp({ embeds: [embed], ephemeral: true });
+    } else return await place.send({ embeds: [embed] });
   },
   /**
    * @description Get an Error Embed
@@ -79,11 +78,11 @@ module.exports = {
       .setDescription(
         `예기치 못한 오류가 발생했습니다.\n관리자에게 문의 바랍니다.\n${error.stack}`
       );
-    return place.channel
-      ? place.isRepliable()
-        ? await place.reply({ embeds: [embed], ephemeral: true })
-        : await place.followUp({ embeds: [embed], ephemeral: true })
-      : await place.send({ embeds: [embed] });
+    if (place.channel) {
+      if (place.isRepliable())
+        return await place.reply({ embeds: [embed], ephemeral: true });
+      else return await place.followUp({ embeds: [embed], ephemeral: true });
+    } else return await place.send({ embeds: [embed] });
   },
   /**
    * @deprecated

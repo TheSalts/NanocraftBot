@@ -85,11 +85,13 @@ async function authorize(credentials, callback, filename, filepath, filesize) {
   });
 }
 
-function storeFiles(auth, filename, filepath, filesize) {
+async function storeFiles(auth, filename, filepath, filesize) {
   const drive = google.drive({ version: "v3", auth });
-  const read = JSON.parse(fs.readFileSync("../config.json", "utf8"));
+  const dataApi = require("../util/dataApi");
+
   let parent = ["1l1jatTkGWFV-XsLk-MasMV17QHtmWPeg"];
-  if (read.project) parent = [read.project];
+  let getData = await dataApi.get({ type: "replayProject" });
+  if (getData[0]) parent = getData[0].value;
 
   var fileMetadata = {
     name: filename,
@@ -130,15 +132,11 @@ function storeFiles(auth, filename, filepath, filesize) {
           .setColor("#33FF99")
           .setURL(url)
           .setTimestamp();
-        if (read.project) {
-          for (let project of JSON.parse(
-            fs.readFileSync("../data/projects.json", "utf8")
-          )) {
-            if (project.id == read.project) {
-              embed.setDescription(`**${project.name}** 프로젝트에 포함됨`);
-            }
-          }
+
+        if (getData[0]) {
+          embed.setDescription(`**${getData[0].name}** 프로젝트에 포함됨`);
         }
+
         sendChannels.send({ embeds: [embed] });
       }
     }

@@ -3,6 +3,7 @@ const { file } = require("googleapis/build/src/apis/file");
 const path = require("path");
 const quick = require("../util/quick");
 const util = require("../util/util");
+const dataApi = require("../util/dataApi");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -47,6 +48,11 @@ module.exports = {
             .setAutocomplete(true)
         )
     ),
+  /**
+   *
+   * @param {Discord.CommandInteraction} interaction
+   * @returns
+   */
   async execute(interaction /*,logchannel*/) {
     const { InteractionType } = require("discord.js");
     if (interaction.type !== InteractionType.ApplicationCommand) return;
@@ -137,6 +143,12 @@ module.exports = {
                 "utf8"
               );
               let pj = JSON.parse(readprojects);
+              const dataApi = require("../util/dataApi");
+              dataApi.upload({
+                type: "project",
+                name: name,
+                value: file.data.id,
+              });
               pj.push({ name: name, id: file.data.id });
               fs.writeFileSync("./data/projects.json", JSON.stringify(pj));
             }
@@ -209,29 +221,29 @@ module.exports = {
         return quick.sendPermissionErrorEmbed(interaction, "MOD");
       }
 
-      if (!fs.existsSync("./data/projects.json"))
-        fs.writeFileSync("./data/projects.json", JSON.stringify([]));
       const name = interaction.options.getString("이름");
       const execute = interaction.options.getString("동작");
-      let config = util.readFile("./config.json");
 
-      let project = util.readFile("./data/projects.json");
-      if (execute == "실행") {
-        for (let projects of project) {
-          if (projects.name == name) {
-            config.project = projects.id;
-            await interaction.editReply(
-              `**${projects.name}** 프로젝트가 활성화되었어요.`
-            );
-            break;
-          }
-        }
-      } else if (execute == "중단") {
-        await interaction.editReply(`프로젝트가 중단되었어요.`);
-        config.project = "";
+      let alreadyRun = false;
+      let getData = await dataApi.get({ type: "project", name: name });
+      if (!getData[0]) {
+        getData = await dataApi.get({ type: "replayProject", name: name });
+        alreadyRun = true;
       }
-      fs.writeFileSync("./config.json", JSON.stringify(config));
-      fs.writeFileSync("./data/projects.json", JSON.stringify(project));
+      if (execute == "실행") {
+        if (alreadyRun === true)
+          return await interaction.editReply(
+            `**${name}** 프로젝트는 이미 실행 중이에요.`
+          );
+        await dataApi.edit(
+          { id: getData[0].id },
+          { editType: "replayProject" }
+        );
+        await interaction.editReply(`**${name}** 프로젝트가 활성화되었어요.`);
+      } else if (execute == "중단") {
+        await dataApi.edit({ id: getData[0].id }, { editType: "project" });
+        await interaction.editReply(`프로젝트가 중단되었어요.`);
+      }
 
       return;
     }
@@ -244,24 +256,20 @@ module.exports = {
           ) ||
           interaction.member.roles.cache.find(
             (role) => role.name === "NANOCRAFT SMP"
-          )
+          ) ||
+          interaction.member.roles.cache.find((role) => role.name === "MOD") ||
+          interaction.member.roles.cache.find((role) => role.name === "STAFF")
         )
       )
-        return; //Trial member || Nanocraft SMP
+        return quick.sendPermissionErrorEmbed(interaction, "나노크래프트 접근"); //Trial member || Nanocraft SMP
       if (!fs.existsSync(config.filepath)) fs.mkdirSync(config.filepath);
 
-      let readconfig = JSON.parse(fs.readFileSync("config.json", "utf8"));
-
-      let project = JSON.parse(fs.readFileSync("./data/projects.json", "utf8"));
       let projectname = "";
       let projectid = "1l1jatTkGWFV-XsLk-MasMV17QHtmWPeg";
-      for (let pj of project) {
-        if (pj.id == readconfig.project) {
-          projectname = pj.name + " ";
-          projectid = pj.id;
-          break;
-        }
-      }
+
+      let getData = await dataApi.get({ type: "replayProject" });
+      projectid = getData[0].value;
+      projectname = getData[0].name;
 
       let pname = projectname || "리플레이";
 
