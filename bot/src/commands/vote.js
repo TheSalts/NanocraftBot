@@ -265,7 +265,7 @@ async function execute(interaction) {
 
         fs.writeFileSync("./data/voteResult.json", JSON.stringify(voted));
         if (term != 0) {
-          let { stopvote } = require("../event/interaction.js");
+          let { stopvote } = require("../module/interaction.js");
           let nowDate = new Date();
           nowDate.setTime(nowDate.getHours() + term);
           util.schedule(
@@ -442,7 +442,7 @@ module.exports.vote = async function (user, channel, voteuserid, voteusername) {
 
       fs.writeFileSync("./data/voteResult.json", JSON.stringify(voted));
       if (term != 0) {
-        let { stopvote } = require("../menu.js");
+        let { stopvote } = require("../module/interaction.js");
         let nowDate = new Date();
         nowDate.setTile(nowDate.getHours() + term);
         util.schedule(

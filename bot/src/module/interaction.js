@@ -34,6 +34,7 @@ const quick = require("../util/quick");
 const util = require("../util/util");
 const path = require("path");
 const notion = require("@notionhq/client");
+const dataApi = require("../util/dataApi");
 
 client.login(config.token);
 
@@ -42,7 +43,7 @@ client.once("ready", () => {
 });
 
 client.on("interactionCreate", async (interaction) => {
-  if (interaction.isAutocomplete()) autocomplete(interaction);
+  if (interaction.isAutocomplete()) await autocomplete(interaction);
   else if (interaction.isSelectMenu()) await selectMenu(interaction);
   else if (interaction.isButton()) await button(interaction);
   else if (interaction.isModalSubmit()) await modal(interaction);
@@ -973,18 +974,17 @@ async function button(interaction) {
   }
 }
 /**
- * @type function
  * @description Discord Autocomplete Interaction
  * @param {Discord.AutocompleteInteraction} interaction
  */
-function autocomplete(interaction) {
+async function autocomplete(interaction) {
   switch (interaction.commandName) {
     case "리플레이":
-      let readprojectList = util.readFile(
-        path.resolve("../data/projects.json")
-      );
-      let list = [];
-      for (let project of readprojectList) {
+      let getData = await dataApi.get({ type: "project" });
+      let getusingData = await dataApi.get({ type: "replayProject" });
+      let projects = getData.concat(getusingData);
+
+      for (let project of projects) {
         list.push({
           name: project.name,
           value: project.name,
@@ -992,7 +992,7 @@ function autocomplete(interaction) {
       }
       if (list.length > 25) list.length = 25;
 
-      interaction.respond(list);
+      await interaction.respond(list);
       break;
     case "불러오기":
       break;
