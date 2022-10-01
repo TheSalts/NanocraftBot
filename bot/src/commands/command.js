@@ -12,7 +12,7 @@ module.exports = {
         .setRequired(true)
         .setChoices(
           { name: "SMP", value: "SMP" }, //8863
-          { name: "크리에이티브", value: "크리에이티브" },
+          { name: "크리에이티브", value: "크리에이티브" }, //8865
           { name: "퍼블릭", value: "퍼블릭" }
         )
     )
@@ -59,10 +59,7 @@ module.exports = {
         await rcon(8863);
         break;
       case "크리에이티브":
-        return await interaction.editReply({
-          ephemeral: true,
-          content: "크리에이티브 서버는 이용이 불가합니다.",
-        });
+        await rcon(8865);
       case "퍼블릭":
         const publicPW = "nanocraft11!!public";
         await ssh(1103, publicPW, "public");
@@ -107,7 +104,8 @@ module.exports = {
                     name: "stderr",
                     value: `${result.stderr || "없음"}`,
                     inline: true,
-                  }
+                  },
+                  { name: "서버", value: serverOpt, inline: true }
                 )
                 .setColor("#66FF66")
                 .setFooter({
@@ -145,7 +143,8 @@ module.exports = {
                   value: `\`${command}\``,
                   inline: true,
                 },
-                { name: "메세지", value: `${message}`, inline: true }
+                { name: "메세지", value: `${message}`, inline: true },
+                { name: "서버", value: serverOpt, inline: true }
               )
               .setColor("#66FF66")
               .setFooter({
@@ -155,11 +154,14 @@ module.exports = {
           } else {
             var cmdresult = new Discord.EmbedBuilder()
               .setDescription("명령어를 성공적으로 실행했습니다.")
-              .addFields({
-                name: "명령어",
-                value: `\`${command}\``,
-                inline: true,
-              })
+              .addFields(
+                {
+                  name: "명령어",
+                  value: `\`${command}\``,
+                  inline: true,
+                },
+                { name: "서버", value: serverOpt, inline: true }
+              )
               .setColor("#66FF66")
               .setFooter({
                 text: interaction.member.user.tag,
