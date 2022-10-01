@@ -978,12 +978,11 @@ async function button(interaction) {
  * @param {Discord.AutocompleteInteraction} interaction
  */
 async function autocomplete(interaction) {
+  console.log(1);
   switch (interaction.commandName) {
     case "리플레이":
-      let getData = await dataApi.get({ type: "project" });
-      let getusingData = await dataApi.get({ type: "replayProject" });
-      let projects = getData.concat(getusingData);
-
+      let list = [];
+      let projects = util.readFile("../data/projects.json");
       for (let project of projects) {
         list.push({
           name: project.name,

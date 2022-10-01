@@ -25,7 +25,7 @@ module.exports = {
     ) {
       return quick.sendPermissionErrorEmbed(interaction, "관리자");
     }
-    if (!interaction.targetMessage.attachments) {
+    if (!interaction.targetMessage.attachments.first()) {
       return await interaction.reply({
         ephemeral: true,
         content: "파일이 올바르지 않습니다.",
