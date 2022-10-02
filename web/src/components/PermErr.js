@@ -1,11 +1,9 @@
 import { Stack, Flex, Box, Text } from '@chakra-ui/layout';
 import { useMediaQuery } from '@chakra-ui/media-query';
 import React from 'react';
-import { useParams } from 'react-router-dom';
 
-function Err() {
+function PermErr() {
   const [isNotSmallerScreen] = useMediaQuery('(min-width:600px)');
-  const { errorname } = useParams();
 
   return (
     <Stack>
@@ -23,10 +21,10 @@ function Err() {
             bgClip="text"
             textAlign="center"
           >
-            Error!
+            Permission Error
           </Text>
           <Text fontSize="5xl" fontWeight="bold">
-            {errorname ?? '에러가 발생했습니다.'}
+            계속하려면 관리자 권한이 필요합니다
           </Text>
         </Box>
       </Flex>
@@ -34,4 +32,4 @@ function Err() {
   );
 }
 
-export default Err;
+export default PermErr;

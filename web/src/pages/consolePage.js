@@ -1,37 +1,37 @@
 import { IconButton } from '@chakra-ui/button';
 import { useColorMode } from '@chakra-ui/color-mode';
-import { Flex, VStack, Heading, Spacer } from '@chakra-ui/layout';
+import { Flex, VStack, Spacer } from '@chakra-ui/layout';
 import { FaSun, FaMoon } from 'react-icons/fa';
-import Err from '../components/Err';
+import React from 'react';
+import SideBar from '../components/sidebar';
+import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-function Error() {
+function ConsolePage() {
   const { colorMode, toggleColorMode } = useColorMode();
   const isDark = colorMode === 'dark';
-  return (
-    <VStack p={5}>
-      <Flex w="100%">
-        <Heading
-          ml="8"
-          size="md"
-          fontWeight="semibold"
-          color="cyan.400"
-          bgGradient="linear(to-r, cyan.400, blue.500)"
-          bgClip="text"
-        >
-          Nanocraft
-        </Heading>
+  const { id } = useParams();
+  const navigate = useNavigate();
 
+  if (!id) {
+    return navigate('/');
+  }
+
+  return (
+    <VStack>
+      <Flex w="100%">
+        <SideBar></SideBar>
         <Spacer></Spacer>
         <IconButton
-          ml={8}
+          mr="5"
+          my="5"
           icon={isDark ? <FaSun /> : <FaMoon />}
           isRound="true"
           onClick={toggleColorMode}
         ></IconButton>
       </Flex>
-      <Err></Err>
     </VStack>
   );
 }
 
-export default Error;
+export default ConsolePage;

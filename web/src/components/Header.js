@@ -5,6 +5,12 @@ import { Stack, Flex, Box, Text } from '@chakra-ui/layout';
 import { useMediaQuery } from '@chakra-ui/media-query';
 import React from 'react';
 
+// import crypto from 'crypto';
+
+function sendAuthToDiscord() {
+  window.location.href = '/auth';
+}
+
 function Header() {
   // const { colorMode } = useColorMode();
   // const isDark = colorMode === 'dark';
@@ -39,11 +45,7 @@ function Header() {
           <Button
             mt={8}
             colorScheme="messenger"
-            onClick={() =>
-              window.open(
-                'https://discord.com/api/oauth2/authorize?client_id=957579723951714334&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fredirect&response_type=code&scope=identify%20guilds%20guilds.join%20guilds.members.read%20gdm.join'
-              )
-            }
+            onClick={sendAuthToDiscord}
             fontWeight="semibold"
           >
             디스코드로 로그인
