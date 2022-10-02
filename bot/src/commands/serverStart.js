@@ -3,21 +3,27 @@ const quick = require("../util/quick");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("서버실행")
-    .setDescription("서버를 실행합니다.")
+    .setName("startserver")
+    .setNameLocalizations({ "en-US": "startserver", ko: "서버실행" })
+    .setDescription("Start minecraft server.")
+    .setDescriptionLocalizations({
+      "en-US": "Start minecraft server.",
+      ko: "마인크래프트 서버를 실행합니다.",
+    })
     .addStringOption((option) =>
       option
-        .setName("서버")
+        .setName("server")
+        .setNameLocalizations({ "en-US": "server", ko: "서버" })
         .setDescription("서버")
         .setRequired(true)
         .setChoices(
-          { name: "크리에이티브", value: "크리에이티브" },
-          { name: "서바이벌", value: "서바이벌" }
+          { name: "CREATIVE", value: "크리에이티브" },
+          { name: "SMP", value: "서바이벌" }
         )
     ),
   async execute(interaction, logchannel, alertchn) {
     const Discord = require("discord.js");
-    const server = interaction.options.getString("서버");
+    const server = interaction.options.getString("server");
     if (
       !(
         interaction.member.roles.cache.some((role) => role.name === "MOD") ||

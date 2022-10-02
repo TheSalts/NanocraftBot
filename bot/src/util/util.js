@@ -1,5 +1,7 @@
 const schedule = require("node-cron");
 const fs = require("fs");
+const path = require("path");
+const Discord = require("discord.js");
 
 module.exports = {
   /**
@@ -29,5 +31,22 @@ module.exports = {
     if (!fs.existsSync(path)) fs.writeFileSync(path, JSON.stringify([]));
     let read = fs.readFileSync(path, "utf8");
     return JSON.parse(read);
+  },
+  /**
+   * @description set language
+   * @param {string | Discord.Interaction.locale | Discord.User.locale} locale user locale: ex) "ko"
+   * @returns
+   */
+  setLang: function (locale) {
+    let dirpath = path.join(__dirname, "..", "lang");
+    let dir = fs.readdirSync(dirpath);
+
+    for (const file of dir) {
+      if (locale === file.trimEnd().replace(".json", "")) {
+        const File = require(`${dirpath}/${file}`);
+        return File;
+      }
+    }
+    return null;
   },
 };

@@ -2,38 +2,68 @@ const { SlashCommandBuilder } = require("@discordjs/builders");
 const path = require("path");
 const config = require("../config.json");
 const quick = require("../util/quick");
+const { PermissionsBitField } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("화이트리스트")
-    .setDescription("화이트리스트를 추가합니다. MOD만 사용 가능합니다.")
+    .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
+    .setName("whitelist")
+    .setNameLocalizations({ "en-US": "whitelist", ko: "화이트리스트" })
+    .setDescription("Add whitelist.")
+    .setDescriptionLocalizations({
+      "en-US": "Add whitelist.",
+      ko: "화이트리스트를 추가합니다.",
+    })
     .addStringOption((option) =>
-      option.setName("닉네임").setDescription("닉네임").setRequired(true)
+      option
+        .setName("nickname")
+        .setNameLocalizations({ "en-US": "nickname", ko: "닉네임" })
+        .setDescription("Minecraft nickname")
+        .setDescriptionLocalizations({
+          "en-US": "Minecraft nickname",
+          ko: "마인크래프트 닉네임",
+        })
+        .setRequired(true)
     )
     .addStringOption((option) =>
       option
-        .setName("서버")
+        .setName("server")
+        .setNameLocalizations({ "en-US": "server", ko: "서버" })
         .setDescription("서버")
         .setRequired(true)
         .addChoices(
-          { name: "크리에이티브 서버", value: "크리에이티브 서버" },
-          { name: "SMP 서버", value: "SMP 서버" }
+          { name: "CREATIVE", value: "크리에이티브 서버" },
+          { name: "SMP", value: "SMP 서버" }
         )
     )
     .addStringOption((option) =>
       option
-        .setName("등록여부")
-        .setDescription("등록 / 제거")
+        .setName("method")
+        .setNameLocalizations({ "en-US": "method", ko: "등록여부" })
+        .setDescription("method")
+        .setDescriptionLocalizations({ "en-US": "methdo", ko: "등록여부" })
         .addChoices(
-          { name: "등록", value: "등록" },
-          { name: "제거", value: "제거" }
+          {
+            name: "register",
+            name_localizations: { "en-US": "register", ko: "등록" },
+            value: "등록",
+          },
+          {
+            name: "delete",
+            name_localizations: { "en-US": "delete", ko: "제거" },
+            value: "제거",
+          }
         )
         .setRequired(true)
     )
     .addStringOption((option) =>
       option
         .setName("teamtag")
-        .setDescription("SMP서버에만 사용 가능합니다.")
+        .setDescription("Only can use in SMP server.")
+        .setDescriptionLocalizations({
+          "en-US": "Only can use in SMP server.",
+          ko: "SMP서버에만 사용 가능합니다.",
+        })
         .setRequired(false)
         .addChoices(
           { name: "Nanocraft", value: "Nanocraft" },
@@ -43,17 +73,14 @@ module.exports = {
         )
     ),
   async execute(interaction) {
-    if (!interaction.member.roles.cache.some((role) => role.name === "MOD"))
-      return quick.sendPermissionErrorEmbed(interaction, "MOD");
-
     await interaction.deferReply({ ephemeral: true });
     const Discord = require("discord.js");
     const fs = require("fs");
     const util = require("minecraft-server-util");
 
-    const nickname = interaction.options.getString("닉네임");
-    const addOrdelete = interaction.options.getString("등록여부");
-    const address = interaction.options.getString("서버");
+    const nickname = interaction.options.getString("nickname");
+    const addOrdelete = interaction.options.getString("method");
+    const address = interaction.options.getString("server");
 
     const list = util.readFile(path.resolve("./data/teamlist.json"));
 
@@ -67,7 +94,7 @@ module.exports = {
       );
 
     if (address == "크리에이티브 서버") {
-      var serverport = 3389;
+      var serverport = 8865;
     } else if (address == "SMP 서버") {
       var serverport = 8863;
       let opt = interaction.options.getString("teamtag");

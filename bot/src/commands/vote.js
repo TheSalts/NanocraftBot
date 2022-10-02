@@ -3,64 +3,149 @@ const quick = require("../util/quick.js");
 const util = require("../util/util");
 
 module.exports.data = new SlashCommandBuilder()
-  .setName("투표")
-  .setDescription("투표 기능입니다.")
+  .setName("vote")
+  .setNameLocalizations({ "en-US": "vote", ko: "투표" })
+  .setDescription("vote")
+  .setDescriptionLocalizations({ "en-US": "vote", ko: "투표" })
   .addSubcommand((subcommand) =>
     subcommand
-      .setName("시작")
+      .setName("start")
+      .setNameLocalizations({ "en-US": "start", ko: "시작" })
       .setDescription("새로운 투표를 만듭니다.")
+      .setDescriptionLocalizations({
+        "en-US": "Create a new vote.",
+        ko: "새로운 투표를 만듭니다.",
+      })
       .addStringOption((option) =>
-        option.setName("주제").setDescription("주제").setRequired(true)
+        option
+          .setName("topic")
+          .setNameLocalizations({ "en-US": "topic", ko: "주제" })
+          .setDescription("topic")
+          .setDescriptionLocalizations({ "en-US": "topic", ko: "주제" })
+          .setRequired(true)
       )
       .addStringOption((option) =>
-        option.setName("설명").setDescription("설명").setRequired(true)
+        option
+          .setName("description")
+          .setNameLocalizations({ "en-US": "description", ko: "설명" })
+          .setDescription("description")
+          .setDescriptionLocalizations({ "en-US": "description", ko: "설명" })
+
+          .setRequired(true)
       )
       .addStringOption((option) =>
-        option.setName("선택지1").setDescription("선택지").setRequired(true)
+        option
+          .setName("option1")
+          .setNameLocalizations({ "en-US": "option1", ko: "선택지1" })
+          .setDescription("option")
+          .setDescriptionLocalizations({ "en-US": "option", ko: "선택지" })
+          .setRequired(true)
       )
       .addStringOption((option) =>
-        option.setName("선택지2").setDescription("선택지").setRequired(true)
+        option
+          .setName("option2")
+          .setNameLocalizations({ "en-US": "option2", ko: "선택지2" })
+          .setDescription("option")
+          .setDescriptionLocalizations({ "en-US": "option", ko: "선택지" })
+          .setRequired(true)
       )
       .addIntegerOption((option) =>
         option
-          .setName("기간")
-          .setDescription("시간 단위입니다. | 기본값: 12시간")
+          .setName("term")
+          .setNameLocalizations({ "en-US": "term", ko: "기간" })
+          .setDescription("Default: 12 hours")
+          .setDescriptionLocalizations({
+            "en-US": "Default: 12 hours",
+            ko: "기본값: 12시간",
+          })
           .setRequired(false)
       )
       .addBooleanOption((option) =>
         option
-          .setName("중복여부")
-          .setDescription("중복 투표 가능 여부 | 기본값: false")
+          .setName("overlap")
+          .setNameLocalizations({ "en-US": "overlap", ko: "중복" })
+          .setDescription("overlap | Default: false")
+          .setDescriptionLocalizations({
+            "en-US": "overlap | Default: false",
+            ko: "중복 | 기본값: false",
+          })
           .setRequired(false)
       )
 
       .addStringOption((option) =>
-        option.setName("선택지3").setDescription("선택지").setRequired(false)
+        option
+          .setName("option3")
+          .setNameLocalizations({ "en-US": "option3", ko: "선택지3" })
+          .setDescription("option")
+          .setDescriptionLocalizations({ "en-US": "option", ko: "선택지" })
+          .setRequired(false)
       )
       .addStringOption((option) =>
-        option.setName("선택지4").setDescription("선택지").setRequired(false)
+        option
+          .setName("option4")
+          .setNameLocalizations({ "en-US": "option4", ko: "선택지4" })
+          .setDescription("option")
+          .setDescriptionLocalizations({ "en-US": "option", ko: "선택지" })
+          .setRequired(false)
       )
       .addStringOption((option) =>
-        option.setName("선택지5").setDescription("선택지").setRequired(false)
+        option
+          .setName("option5")
+          .setNameLocalizations({ "en-US": "option5", ko: "선택지5" })
+          .setDescription("option")
+          .setDescriptionLocalizations({ "en-US": "option", ko: "선택지" })
+          .setRequired(false)
       )
       .addStringOption((option) =>
-        option.setName("선택지6").setDescription("선택지").setRequired(false)
+        option
+          .setName("option6")
+          .setNameLocalizations({ "en-US": "option6", ko: "선택지6" })
+          .setDescription("option")
+          .setDescriptionLocalizations({ "en-US": "option", ko: "선택지" })
+          .setRequired(false)
       )
       .addStringOption((option) =>
-        option.setName("선택지7").setDescription("선택지").setRequired(false)
+        option
+          .setName("option7")
+          .setNameLocalizations({ "en-US": "option7", ko: "선택지7" })
+          .setDescription("option")
+          .setDescriptionLocalizations({ "en-US": "option", ko: "선택지" })
+          .setRequired(false)
       )
       .addStringOption((option) =>
-        option.setName("선택지8").setDescription("선택지").setRequired(false)
+        option
+          .setName("option8")
+          .setNameLocalizations({ "en-US": "option8", ko: "선택지8" })
+          .setDescription("option")
+          .setDescriptionLocalizations({ "en-US": "option", ko: "선택지" })
+          .setRequired(false)
       )
       .addStringOption((option) =>
-        option.setName("선택지9").setDescription("선택지").setRequired(false)
+        option
+          .setName("option9")
+          .setNameLocalizations({ "en-US": "option9", ko: "선택지9" })
+          .setDescription("option")
+          .setDescriptionLocalizations({ "en-US": "option", ko: "선택지" })
+          .setRequired(false)
       )
       .addStringOption((option) =>
-        option.setName("선택지10").setDescription("선택지").setRequired(false)
+        option
+          .setName("option10")
+          .setNameLocalizations({ "en-US": "option10", ko: "선택지10" })
+          .setDescription("option")
+          .setDescriptionLocalizations({ "en-US": "option", ko: "선택지" })
+          .setRequired(false)
       )
   )
   .addSubcommand((subcommand) =>
-    subcommand.setName("종료").setDescription("투표를 종료합니다.")
+    subcommand
+      .setName("stop")
+      .setNameLocalizations({ "en-US": "stop", ko: "종료" })
+      .setDescription("Stop vote.")
+      .setDescriptionLocalizations({
+        "en-US": "Stop vote.",
+        ko: "투표를 종료합니다.",
+      })
   );
 
 module.exports.execute = execute;
@@ -105,7 +190,7 @@ async function execute(interaction) {
   let canvote = "";
   let votecooltime = 0;
 
-  if (interaction.options.getSubcommand() === "시작") {
+  if (interaction.options.getSubcommand() === "start") {
     if (!interaction.member.roles.cache.some((role) => role.name === "MOD")) {
       for (let vote of votetime) {
         if (vote.user == interaction.member.user.id)
@@ -141,13 +226,13 @@ async function execute(interaction) {
         });
       fs.writeFileSync("./data/votetime.json", JSON.stringify(votetime));
     }
-    const topic = interaction.options.getString("주제");
-    const description = interaction.options.getString("설명");
-    const overs = interaction.options.getBoolean("중복여부");
+    const topic = interaction.options.getString("topic");
+    const description = interaction.options.getString("description");
+    const overs = interaction.options.getBoolean("overlap");
     let over = "";
     if (overs) over = true;
     if (!overs) over = false;
-    let term = interaction.options.getInteger("기간");
+    let term = interaction.options.getInteger("term");
     if (term) {
       if (!interaction.member.roles.cache.some((role) => role.name === "MOD")) {
         if (term <= 0)
@@ -173,16 +258,16 @@ async function execute(interaction) {
           });
       }
     } else term = 12;
-    const s1 = interaction.options.getString("선택지1");
-    const s2 = interaction.options.getString("선택지2");
-    const s3 = interaction.options.getString("선택지3");
-    const s4 = interaction.options.getString("선택지4");
-    const s5 = interaction.options.getString("선택지5");
-    const s6 = interaction.options.getString("선택지6");
-    const s7 = interaction.options.getString("선택지7");
-    const s8 = interaction.options.getString("선택지8");
-    const s9 = interaction.options.getString("선택지9");
-    const s10 = interaction.options.getString("선택지10");
+    const s1 = interaction.options.getString("option1");
+    const s2 = interaction.options.getString("option2");
+    const s3 = interaction.options.getString("option3");
+    const s4 = interaction.options.getString("option4");
+    const s5 = interaction.options.getString("option5");
+    const s6 = interaction.options.getString("option6");
+    const s7 = interaction.options.getString("option7");
+    const s8 = interaction.options.getString("option8");
+    const s9 = interaction.options.getString("option9");
+    const s10 = interaction.options.getString("option10");
     addsel(s1);
     addsel(s2);
     if (s3) addsel(s3);
@@ -278,7 +363,7 @@ async function execute(interaction) {
       });
 
     // 종료
-  } else if (interaction.options.getSubcommand() === "종료") {
+  } else if (interaction.options.getSubcommand() === "stop") {
     let vote = quick.readFile("./data/vote.json");
 
     if (!interaction.member.roles.cache.some((role) => role.name === "MOD")) {

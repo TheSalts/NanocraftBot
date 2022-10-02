@@ -2,24 +2,23 @@ const { SlashCommandBuilder } = require("@discordjs/builders");
 const Discord = require("discord.js");
 const fs = require("fs");
 const path = require("path");
-const quick = require("../util/quick.js");
 const util = require("../util/util");
+const { PermissionsBitField } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("초기설정")
-    .setDescription("moderator only"),
+    .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageChannels)
+    .setName("init")
+    .setNameLocalizations({ "en-US": "init", ko: "초기설정" })
+    .setDescription("Connect with NANOCRAFT SMP.")
+    .setDescriptionLocalizations({
+      "en-US": "Connect with NANOCRAFT SMP.",
+      ko: "NANOCRAFT SMP와 연동합니다.",
+    }),
   /**
    * @param {Discord.CommandInteraction} interaction
    */
   async execute(interaction) {
-    const { PermissionsBitField } = require("discord.js");
-    if (
-      !interaction.member.permissions.has(
-        PermissionsBitField.Flags.ManageChannels
-      )
-    )
-      return quick.sendPermissionErrorEmbed(interaction, "채널 관리 권한");
     await interaction.deferReply({ ephemeral: true });
     //초기설정 여러번
     if (fs.existsSync("./data/publicCategory.json")) {

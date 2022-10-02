@@ -7,14 +7,24 @@ const path = require("path");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("경고확인")
-    .setDescription("경고를 확인합니다.")
+    .setName("warncheck")
+    .setNameLocalizations({ "en-US": "warncheck", ko: "경고확인" })
+    .setDescription("check warn count.")
+    .setDescriptionLocalizations({
+      "en-US": "check warn count.",
+      ko: "경고를 확인합니다.",
+    })
     .addUserOption((option) =>
-      option.setName("대상").setDescription("대상").setRequired(false)
+      option
+        .setName("member")
+        .setNameLocalizations({ "en-US": "member", ko: "대상" })
+        .setDescription("member")
+        .setDescriptionLocalizations({ "en-US": "member", ko: "대상" })
+        .setRequired(false)
     ),
   async execute(interaction) {
     let badalert = util.readFile(path.resolve("./data/badalert.json"));
-    const useroption = interaction.options.getUser("대상");
+    const useroption = interaction.options.getUser("member");
 
     if (useroption) var user = useroption;
     else var user = interaction.user;

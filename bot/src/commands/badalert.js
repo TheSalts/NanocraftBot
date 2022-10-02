@@ -1,34 +1,68 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const wait = require("node:timers/promises").setTimeout;
 const util = require("../util/util");
+const { PermissionsBitField } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("경고")
-    .setDescription("경고")
+    .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
+    .setName("warn")
+    .setDescription("warn")
+    .setNameLocalizations({
+      "en-US": "warn",
+      ko: "경고",
+    })
+    .setDescriptionLocalizations({
+      "en-US": "Warn user.",
+      ko: "유저를 경고합니다.",
+    })
     .addUserOption((option) =>
-      option.setName("대상").setDescription("대상").setRequired(true)
+      option
+        .setName("member")
+        .setDescription("member")
+        .setNameLocalizations({ "en-US": "member", ko: "대상" })
+        .setDescriptionLocalizations({ "en-US": "member", ko: "대상" })
+        .setRequired(true)
     )
     .addStringOption((option) =>
-      option.setName("사유").setDescription("사유").setRequired(true)
-    )
-    .addIntegerOption((option) =>
-      option.setName("경고횟수").setDescription("횟수").setRequired(true)
+      option
+        .setName("reason")
+        .setDescription("reason")
+        .setNameLocalizations({ "en-US": "reason", ko: "사유" })
+        .setDescriptionLocalizations({ "en-US": "reason", ko: "사유" })
+        .setRequired(true)
     )
     .addIntegerOption((option) =>
       option
-        .setName("스레드유지기간")
-        .setDescription("기본값: 12시간")
+        .setName("count")
+        .setDescription("count")
+        .setNameLocalizations({ "en-US": "count", ko: "횟수" })
+        .setDescriptionLocalizations({ "en-US": "count", ko: "횟수" })
+        .setRequired(true)
+    )
+    .addIntegerOption((option) =>
+      option
+        .setName("thread_expiration_time")
+        .setDescription("Default: 12 hours")
+        .setNameLocalizations({
+          "en-US": "thread_expiration_time",
+          ko: "스레드유지기간",
+        })
+        .setDescriptionLocalizations({
+          "en-US": "Default: 12 hours",
+          ko: "기본값: 12시간",
+        })
         .setRequired(false)
     ),
   async execute(interaction, logchannel, alertchn) {
+    const lang = util.setLang(interaction.locale);
     const path = require("path");
     const Discord = require("discord.js");
     const quick = require("../util/quick.js");
-    const user = interaction.options.getUser("대상");
-    const reason = interaction.options.getString("사유");
-    const alertnum = interaction.options.getInteger("경고횟수");
-    var threadtime = interaction.options.getInteger("스레드 유지 기간");
+    const user = interaction.options.getUser("member");
+    const reason = interaction.options.getString("reason");
+    const alertnum = interaction.options.getInteger("count");
+    var threadtime = interaction.options.getInteger("thread_expiration_time");
     const fs = require("fs");
     if (!interaction.member.roles.cache.some((role) => role.name === "MOD"))
       return quick.sendPermissionErrorEmbed(interaction, "MOD");

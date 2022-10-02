@@ -1,31 +1,64 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const quick = require("../util/quick.js");
+const { PermissionsBitField } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("스크랩")
-    .setDescription("MOD만 사용 가능합니다.")
+    .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
+    .setName("scrap")
+    .setNameLocalizations({ "en-US": "scrap", ko: "스크랩" })
+    .setDescription("Fetch channel messages with thread.")
+    .setDescriptionLocalizations({
+      "en-US": "Fetch channel messages with thread.",
+      ko: "채널에서 메시지를 가져옵니다.",
+    })
     .addChannelOption((option) =>
-      option.setName("채널").setDescription("채널").setRequired(true)
+      option
+        .setName("channel")
+        .setNameLocalizations({ "en-US": "channel", ko: "채널" })
+        .setDescription("channel")
+        .setDescriptionLocalizations({ "en-US": "channel", ko: "채널" })
+        .setRequired(true)
     )
     .addStringOption((option) =>
-      option.setName("설명").setDescription("설명").setRequired(true)
+      option
+        .setName("description")
+        .setNameLocalizations({ "en-US": "description", ko: "설명" })
+        .setDescription("description")
+        .setDescriptionLocalizations({ "en-US": "description", ko: "설명" })
+        .setRequired(true)
     )
     .addRoleOption((option) =>
-      option.setName("역할").setDescription("역할").setRequired(false)
+      option
+        .setName("role")
+        .setNameLocalizations({ "en-US": "role", ko: "역할" })
+        .setDescription("role")
+        .setDescriptionLocalizations({ "en-US": "role", ko: "역할" })
+        .setRequired(false)
     )
     .addIntegerOption((option) =>
       option
-        .setName("메시지수")
+        .setName("count")
+        .setNameLocalizations({ "en-US": "count", ko: "메시지수" })
         .setDescription(
-          "가져올 메시지의 수를 정합니다. 기본값은 100이며 최대 100까지 가능합니다."
+          "Determines the number of messages to fetch. | Default: 100 | Max: 100"
         )
+        .setDescriptionLocalizations({
+          "en-US":
+            "Determines the number of messages to fetch. | Default: 100 | Max: 100",
+          ko: "가져올 메시지의 수를 정합니다. 기본값은 100이며 최대 100까지 가능합니다.",
+        })
         .setRequired(false)
     )
     .addUserOption((option) =>
       option
-        .setName("투표멤버")
-        .setDescription("멤버 신청시 투표 자동 출력입니다.")
+        .setName("votemember")
+        .setNameLocalizations({ "en-US": "votemember", ko: "투표멤버" })
+        .setDescription("Send automatically member request vote.")
+        .setDescriptionLocalizations({
+          "en-US": "Send automatically member request vote.",
+          ko: "자동으로 멤버 신청 투표를 보냅니다.",
+        })
         .setRequired(false)
     ),
   /**
@@ -41,24 +74,16 @@ module.exports = {
       });
       return;
     }
-    if (
-      !(
-        interaction.member.roles.cache.some((role) => role.name === "MOD") ||
-        interaction.member.roles.cache.some((role) => role.name === "STAFF")
-      )
-    ) {
-      return quick.sendPermissionErrorEmbed(interaction, "관리자");
-    }
     await interaction.reply(
       "채널에서 메시지를 가져오는 중이에요...\n메시지를 업로드하는 동안 스레드에서 다른 메시지를 하지 말아주세요!"
     );
     const Discord = require("discord.js");
     const wait = require("node:timers/promises").setTimeout;
-    const channel = interaction.options.getChannel("채널");
-    const lm = interaction.options.getInteger("메시지수");
-    const role = interaction.options.getRole("역할");
-    const desc = interaction.options.getString("설명");
-    const trial = interaction.options.getUser("투표멤버");
+    const channel = interaction.options.getChannel("channel");
+    const lm = interaction.options.getInteger("count");
+    const role = interaction.options.getRole("role");
+    const desc = interaction.options.getString("description");
+    const trial = interaction.options.getUser("votemember");
 
     let limit = 100;
     if (lm) {

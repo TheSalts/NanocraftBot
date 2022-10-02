@@ -7,43 +7,77 @@ const dataApi = require("../util/dataApi");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("리플레이")
-    .setDescription("리플레이 파일을 전부 다운로드합니다.")
+    .setName("replay")
+    .setNameLocalizations({ "en-US": "replay", ko: "리플레이" })
+    .setDescription("download replay files.")
+    .setDescriptionLocalizations({
+      "en-US": "download replay files.",
+      ko: "리플레이 파일을 다운로드합니다.",
+    })
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("다운로드")
-        .setDescription("리플레이 파일을 전부 다운로드합니다.")
+        .setName("download")
+        .setNameLocalizations({ "en-US": "download", ko: "다운로드" })
+        .setDescription("download replay files.")
+        .setDescriptionLocalizations({
+          "en-US": "download replay files.",
+          ko: "리플레이 파일을 다운로드합니다.",
+        })
     )
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("프로젝트")
-        .setDescription("프로젝트")
+        .setName("project")
+        .setNameLocalizations({ "en-US": "project", ko: "프로젝트" })
+        .setDescription("project")
+        .setDescriptionLocalizations({ "en-US": "project", ko: "프로젝트" })
         .addStringOption((option) =>
           option
-            .setName("이름")
-            .setDescription("이름")
+            .setName("name")
+            .setNameLocalizations({ "en-US": "name", ko: "이름" })
+            .setDescription("name")
+            .setDescriptionLocalizations({ "en-US": "name", ko: "이름" })
             .setRequired(true)
             .setAutocomplete(true)
         )
         .addStringOption((option) =>
           option
-            .setName("동작")
-            .setDescription("동작")
+            .setName("method")
+            .setNameLocalizations({ "en-US": "method", ko: "동작" })
+            .setDescription("method")
+            .setDescriptionLocalizations({ "en-US": "method", ko: "동작" })
             .setRequired(true)
             .addChoices(
-              { name: "실행", value: "실행" },
-              { name: "중단", value: "중단" }
+              {
+                name: "execute",
+                name_localizations: { "en-US": "execute", ko: "실행" },
+                value: "실행",
+              },
+              {
+                name: "stop",
+                name_localizations: { "en-US": "stop", ko: "중단" },
+                value: "중단",
+              }
             )
         )
     )
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("프로젝트생성")
-        .setDescription("프로젝트생성")
+        .setName("addproject")
+        .setNameLocalizations({ "en-US": "addproject", ko: "프로젝트생성" })
+        .setDescription("Add project")
+        .setDescriptionLocalizations({
+          "en-US": "Add project.",
+          ko: "프로젝트를 추가합니다.",
+        })
         .addStringOption((option) =>
           option
-            .setName("이름")
-            .setDescription("이름")
+            .setName("name")
+            .setNameLocalizations({ "en-US": "name", ko: "이름" })
+            .setDescription("name")
+            .setDescriptionLocalizations({
+              "en-US": "Project name",
+              ko: "프로젝트 이름",
+            })
             .setRequired(true)
             .setAutocomplete(true)
         )
@@ -74,11 +108,11 @@ module.exports = {
 
     const TOKEN_PATH = "./data/token.json";
 
-    if (interaction.options.getSubcommand() === "다운로드") {
+    if (interaction.options.getSubcommand() === "download") {
       await download();
-    } else if (interaction.options.getSubcommand() === "프로젝트") {
+    } else if (interaction.options.getSubcommand() === "project") {
       await project();
-    } else if (interaction.options.getSubcommand() === "프로젝트생성") {
+    } else if (interaction.options.getSubcommand() === "addproject") {
       await createProject();
     }
 
@@ -95,7 +129,7 @@ module.exports = {
       } else {
         return quick.sendPermissionErrorEmbed(interaction, "MOD");
       }
-      const name = interaction.options.getString("이름");
+      const name = interaction.options.getString("name");
       await createfolder(name);
     }
 
@@ -221,8 +255,8 @@ module.exports = {
         return quick.sendPermissionErrorEmbed(interaction, "MOD");
       }
 
-      const name = interaction.options.getString("이름");
-      const execute = interaction.options.getString("동작");
+      const name = interaction.options.getString("name");
+      const execute = interaction.options.getString("method");
 
       let alreadyRun = false;
       let getData = await dataApi.get({ type: "project", name: name });
@@ -230,7 +264,7 @@ module.exports = {
         getData = await dataApi.get({ type: "replayProject", name: name });
         alreadyRun = true;
       }
-      if (execute == "실행") {
+      if (execute == "execute") {
         if (alreadyRun === true)
           return await interaction.editReply(
             `**${name}** 프로젝트는 이미 실행 중이에요.`
@@ -240,7 +274,7 @@ module.exports = {
           { editType: "replayProject" }
         );
         await interaction.editReply(`**${name}** 프로젝트가 활성화되었어요.`);
-      } else if (execute == "중단") {
+      } else if (execute == "stop") {
         await dataApi.edit({ id: getData[0].id }, { editType: "project" });
         await interaction.editReply(`프로젝트가 중단되었어요.`);
       }

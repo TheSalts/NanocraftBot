@@ -1,23 +1,34 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const quick = require("../util/quick");
+const { PermissionsBitField } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("메시지삭제")
-    .setDescription("MOD만 사용 가능합니다.")
+    .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageChannels)
+    .setName("deletemessage")
+    .setNameLocalizations({ "en-US": "deletemessage", ko: "메시지삭제" })
+    .setDescription("Delete messages.")
+    .setDescriptionLocalizations({
+      "en-US": "Delete messages.",
+      ko: "메시지를 지웁니다.",
+    })
 
     .addIntegerOption((option) =>
       option
-        .setName("메시지수")
-        .setDescription("가져올 메시지의 수를 정합니다. 1~100까지 가능합니다.")
+        .setName("count")
+        .setNameLocalizations({ "en-US": "count", ko: "메시지수" })
+        .setDescription(
+          "Determines the number of messages to delete. | Max: 100"
+        )
+        .setDescriptionLocalizations({
+          "en-US": "Determines the number of messages to delete. | Max: 100",
+          ko: "지울 메시지의 수를 정합니다. | 최대: 100",
+        })
         .setRequired(true)
     ),
   async execute(interaction) {
     const Discord = require("discord.js");
-    const lm = interaction.options.getInteger("메시지수");
-    if (!interaction.member.roles.cache.some((role) => role.name === "MOD")) {
-      return quick.sendPermissionErrorEmbed(interaction, "관리자");
-    }
+    const lm = interaction.options.getInteger("count");
     if (lm < 1)
       return await interaction.reply({
         ephemeral: true,

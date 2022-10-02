@@ -1,23 +1,40 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const { PermissionsBitField } = require("discord.js");
 const Discord = require("discord.js");
 const quick = require("../util/quick");
+
 module.exports = {
   data: new SlashCommandBuilder()
+    .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
     .setName("command")
-    .setDescription("서버에 명령어를 사용합니다.")
+    .setDescription("Use minecraft command to server.")
+    .setDescriptionLocalizations({
+      "en-US": "Use minecraft command to server.",
+      ko: "마인크래프트 서버에 명령어를 사용합니다.",
+    })
     .addStringOption((option) =>
       option
-        .setName("서버")
-        .setDescription("실행할 서버")
+        .setName("server")
+        .setNameLocalizations({ "en-US": "server", ko: "서버" })
+        .setDescription("A minecraft server to execute command")
+        .setDescriptionLocalizations({
+          "en-US": "A minecraft server to execute command",
+          ko: "명령어를 실행할 서버",
+        })
         .setRequired(true)
         .setChoices(
           { name: "SMP", value: "SMP" }, //8863
-          { name: "크리에이티브", value: "크리에이티브" }, //8865
-          { name: "퍼블릭", value: "퍼블릭" }
+          { name: "CREATIVE", value: "크리에이티브" }, //8865
+          { name: "PUBLIC", value: "퍼블릭" }
         )
     )
     .addStringOption((option) =>
-      option.setName("명령어").setDescription("실행할 명령어").setRequired(true)
+      option
+        .setName("command")
+        .setNameLocalizations({ "en-US": "command", ko: "명령어" })
+        .setDescription("Command")
+        .setDescriptionLocalizations({ "en-US": "Command", ko: "명령어" })
+        .setRequired(true)
     ),
   /**
    *

@@ -2,10 +2,20 @@ const { SlashCommandBuilder } = require("@discordjs/builders");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("검색")
-    .setDescription("구글에서 검색합니다.")
+    .setName("search")
+    .setNameLocalizations({ "en-US": "search", ko: "검색" })
+    .setDescription("Search from Google.")
+    .setDescriptionLocalizations({
+      "en-US": "Search from Google.",
+      ko: "구글에서 검색합니다.",
+    })
     .addStringOption((option) =>
-      option.setName("검색어").setDescription("검색어").setRequired(true)
+      option
+        .setName("keyword")
+        .setNameLocalizations({ "en-US": "keyword", ko: "검색어" })
+        .setDescription("keyword")
+        .setDescriptionLocalizations({ "en-US": "keyword", ko: "검색어" })
+        .setRequired(true)
     ),
   async execute(interaction) {
     await interaction.reply({
@@ -15,7 +25,7 @@ module.exports = {
     });
     const Discord = require("discord.js");
     const googleIt = require("google-it");
-    const option1 = interaction.options.getString("검색어");
+    const option1 = interaction.options.getString("keyword");
     const fs = require("fs");
 
     await googleIt({ query: option1 })

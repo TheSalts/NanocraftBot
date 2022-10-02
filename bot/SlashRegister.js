@@ -1,26 +1,26 @@
 const { REST } = require("@discordjs/rest");
 const { Routes } = require("discord.js");
-const { token } = require("./config.json");
+const { token } = require("./src/config.json");
 const fs = require("fs");
 
 const commands = [];
 const commandFiles = fs
-  .readdirSync("./commands")
-  .filter((file) => file.endsWith(".js"));
+  .readdirSync("./src/commands")
+  .filter((file) => file.endsWith(".js") && !file.startsWith("!"));
 const contextCommandFiles = fs
-  .readdirSync("./contextMenu")
-  .filter((file) => file.endsWith(".js"));
+  .readdirSync("./src/contextMenu")
+  .filter((file) => file.endsWith(".js") && !file.startsWith("!"));
 
 // Place your client and guild ids here
 const clientId = "957579723951714334";
 const guildId = "905731712582053950";
 
 for (const file of commandFiles) {
-  const command = require(`./commands/${file}`);
+  const command = require(`./src/commands/${file}`);
   commands.push(command.data.toJSON());
 }
 for (const file of contextCommandFiles) {
-  const command = require(`./contextMenu/${file}`);
+  const command = require(`./src/contextMenu/${file}`);
   commands.push(command.data.toJSON());
 }
 const rest = new REST({ version: "10" }).setToken(token);

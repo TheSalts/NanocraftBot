@@ -2,8 +2,13 @@ const { SlashCommandBuilder } = require("@discordjs/builders");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("백업보기")
-    .setDescription("백업된 파일을 봅니다"),
+    .setName("backupfile")
+    .setNameLocalizations({ "en-US": "backupfile", ko: "백업파일" })
+    .setDescription("View server backup files.")
+    .setDescriptionLocalizations({
+      "en-US": "View server backup files.",
+      ko: "백업 파일을 보여줍니다.",
+    }),
   async execute(interaction /*,logchannel*/) {
     await interaction.deferReply({ ephemeral: true });
     const fs = require("fs");
