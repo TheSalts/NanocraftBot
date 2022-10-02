@@ -6,6 +6,7 @@ const quick = require("../util/quick.js");
 module.exports = {
   data: new ContextMenuCommandBuilder()
     .setName("translate")
+    .setNameLocalizations({ "en-US": "translate", ko: "번역" })
     .setType(ApplicationCommandType.Message),
   /**
    * @param {Discord.MessageContextMenuCommandInteraction} interaction

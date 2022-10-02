@@ -5,26 +5,21 @@ const {
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
+  PermissionsBitField,
 } = require("discord.js");
 const Discord = require("discord.js");
 const quick = require("../util/quick");
 
 module.exports = {
   data: new ContextMenuCommandBuilder()
+    .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
     .setName("upload")
+    .setNameLocalizations({ "en-US": "upload", ko: "업로드" })
     .setType(ApplicationCommandType.Message),
   /**
    * @param {Discord.MessageContextMenuCommandInteraction} interaction
    */
   async execute(interaction) {
-    if (
-      !(
-        interaction.member.roles.cache.some((role) => role.name === "STAFF") ||
-        interaction.member.roles.cache.some((role) => role.name === "MOD")
-      )
-    ) {
-      return quick.sendPermissionErrorEmbed(interaction, "관리자");
-    }
     if (!interaction.targetMessage.attachments.first()) {
       return await interaction.reply({
         ephemeral: true,
