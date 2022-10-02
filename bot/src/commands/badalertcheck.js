@@ -23,6 +23,7 @@ module.exports = {
         .setRequired(false)
     ),
   async execute(interaction) {
+    const lang = util.setLang(interaction.locale);
     let badalert = util.readFile(path.resolve("./data/badalert.json"));
     const useroption = interaction.options.getUser("member");
 
@@ -30,16 +31,16 @@ module.exports = {
     else var user = interaction.user;
 
     let embed = new Discord.EmbedBuilder()
-      .setTitle("경고 확인")
+      .setTitle(lang.warncheck.embed.title)
       .setColor("Blue")
       .setAuthor({
         name: user.username,
         iconURL: user.displayAvatarURL(),
       })
       .setDescription(
-        user.username +
-          "님은 경고가 **" +
-          ((await checkAlert(user.id)) + "**개에요.")
+        lang.warncheck.embed.description
+          .replaceAll("${user.username}", user.username)
+          .replaceAll("${count}", await checkAlert(user.id))
       );
 
     async function checkAlert(userid) {

@@ -88,6 +88,7 @@ module.exports = {
    * @returns
    */
   async execute(interaction /*,logchannel*/) {
+    const lang = util.setLang(interaction.locale);
     const { InteractionType } = require("discord.js");
     if (interaction.type !== InteractionType.ApplicationCommand) return;
     await interaction.deferReply({
@@ -137,9 +138,7 @@ module.exports = {
       let readproject = util.readFile(path.resolve("./data/projects.json"));
       for (let project of readproject) {
         if (project.name == name)
-          return await interaction.editReply(
-            "이미 존재하는 프로젝트에요. 이름을 바꿔서 다시 시도해 주세요."
-          );
+          return await interaction.editReply(lang.replay.alert.alreadyExists);
       }
       fs.readFile("./data/credentials.json", (err, content) => {
         if (err) return console.log("Error loading client secret file:", err);
@@ -170,7 +169,9 @@ module.exports = {
                 }
               );
               interaction.editReply(
-                `프로젝트 **${name}**이(가) 추가되었어요. (id: "${file.data.id}")`
+                lang.replay.alert.successAdd
+                  .replaceAll("${name}", name)
+                  .replaceAll("${file.data.id}", file.data.id)
               );
               let readprojects = fs.readFileSync(
                 "./data/projects.json",
@@ -267,16 +268,16 @@ module.exports = {
       if (execute == "execute") {
         if (alreadyRun === true)
           return await interaction.editReply(
-            `**${name}** 프로젝트는 이미 실행 중이에요.`
+            lang.replay.alert.alreadyRunning.replaceAll("${name}", name)
           );
         await dataApi.edit(
           { id: getData[0].id },
           { editType: "replayProject" }
         );
-        await interaction.editReply(`**${name}** 프로젝트가 활성화되었어요.`);
+        await interaction.editReply(lang.replay.alert.run);
       } else if (execute == "stop") {
         await dataApi.edit({ id: getData[0].id }, { editType: "project" });
-        await interaction.editReply(`프로젝트가 중단되었어요.`);
+        await interaction.editReply(lang.replay.alert.stop);
       }
 
       return;
@@ -305,14 +306,18 @@ module.exports = {
       projectid = getData[0].value;
       projectname = getData[0].name;
 
-      let pname = projectname || "리플레이";
+      let pname;
+      if (lang.language === "ko") pname = projectname || "리플레이";
+      else pname = projectname || "Replay";
 
       let url = `https://drive.google.com/drive/folders/${projectid}?usp=sharing`;
 
       const embed = new Discord.EmbedBuilder()
         .setTitle(pname)
         .setDescription(
-          `[${projectname}링크](${url})를 생성했어요.\n전체 파일 다운로드 방법:`
+          lang.replay.embed.description
+            .replaceAll("${projectname}", projectname)
+            .replaceAll("${url}", url)
         )
         .setColor("#33FF99")
         .setURL(url)
@@ -323,15 +328,16 @@ module.exports = {
         .then((msg) => {
           interaction.editReply({
             ephemeral: true,
-            content: `파일을 [DM](${msg.url})으로 전송했어요!`,
+            content: lang.replay.alert.filesent.replaceAll(
+              "${msg.url}",
+              msg.url
+            ),
           });
         })
         .catch(() => {
           const errEmbed = new Discord.EmbedBuilder()
-            .setTitle("에러: DM을 보낼 수 없습니다.")
-            .setDescription(
-              "개인정보 보호 설정 > 서버 멤버가 보내는 다이렉트 메시지 허용하기를 체크해주셔야 다운로드가 가능합니다."
-            )
+            .setTitle(lang.replay.embed.error.title)
+            .setDescription(lang.replay.embed.error.description)
             .setColor("#FF0000")
             .setImage("https://i.imgur.com/WQlZLmO.png");
           interaction.editReply({

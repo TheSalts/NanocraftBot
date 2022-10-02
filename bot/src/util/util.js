@@ -35,7 +35,7 @@ module.exports = {
   /**
    * @description set language
    * @param {string | Discord.Interaction.locale | Discord.User.locale} locale user locale: ex) "ko"
-   * @returns
+   * @returns {}
    */
   setLang: function (locale) {
     let dirpath = path.join(__dirname, "..", "lang");

@@ -184,6 +184,7 @@ function getVoteOption() {
 }
 
 async function execute(interaction) {
+  const lang = util.setLang(interaction.locale);
   sel = [];
   let voteList = quick.readFile(path.resolve("./data/vote.json"));
   let votetime = quick.readFile(path.resolve("./data/votetime.json"));
@@ -207,10 +208,7 @@ async function execute(interaction) {
       if (votedtime > 2)
         return await interaction.reply({
           ephemeral: true,
-          content:
-            "투표는 한번에 2번까지만 할 수 있어요. 다른 투표를 종료해주세요.\n" +
-            "현재 투표 수: " +
-            votedtime,
+          content: lang.vote.alert.max.replaceAll("${votedtime}", votedtime),
         });
       await votetime.push({
         user: interaction.member.user.id,
@@ -219,10 +217,10 @@ async function execute(interaction) {
       if (canvote == "nocooltime")
         return await interaction.reply({
           ephemeral: true,
-          content:
-            "아직 쿨타임이 지나지 않아 사용할 수 없어요.\n쿨타임: 30분\n지난 시간: " +
-            Math.floor(votecooltime / 1000 / 60) +
-            "분",
+          content: lang.vote.alert.cooltime.replaceAll(
+            "${time}",
+            Math.floor(votecooltime / 1000 / 60)
+          ),
         });
       fs.writeFileSync("./data/votetime.json", JSON.stringify(votetime));
     }
@@ -238,23 +236,23 @@ async function execute(interaction) {
         if (term <= 0)
           return interaction.reply({
             ephemeral: true,
-            content: "잘못된 기간이에요.\n1~24 사이의 숫자를 입력해 주세요.",
+            content: lang.vote.alert.wrongterm,
           });
         if (term > 24)
           return interaction.reply({
             ephemeral: true,
-            content: "잘못된 기간이에요.\n1~24 사이의 숫자를 입력해 주세요.",
+            content: lang.vote.alert.wrongterm,
           });
       } else {
         if (term < 0)
           return interaction.reply({
             ephemeral: true,
-            content: "잘못된 기간이에요.\n0~24 사이의 숫자를 입력해 주세요.",
+            content: lang.vote.alert.wrongterm,
           });
         if (term > 24)
           return interaction.reply({
             ephemeral: true,
-            content: "잘못된 기간이에요.\n0~24 사이의 숫자를 입력해 주세요.",
+            content: lang.vote.alert.wrongterm,
           });
       }
     } else term = 12;
@@ -286,10 +284,12 @@ async function execute(interaction) {
       if (sel.length - 1 == i) {
         selmsg = selmsg + `${i + 1}. ${sel[i]}`;
         var voteEmbed = new Discord.EmbedBuilder()
-          .setTitle(`투표 | ${topic}`)
+          .setTitle(lang.vote.embed.title.replaceAll("${topic}", topic))
           .setDescription(description + "\n```md\n" + selmsg + "```")
           .setFooter({
-            text: `중복 투표: ${over}` + " • " + `기간: ${term}시간`,
+            text: lang.vote.embed.description
+              .replaceAll("${over}", over)
+              .replaceAll("${term}", term),
           });
       } else selmsg = selmsg + `${i + 1}. ${sel[i]}\n`;
     }
@@ -303,7 +303,7 @@ async function execute(interaction) {
     const votemenu = new Discord.ActionRowBuilder().addComponents(
       new Discord.SelectMenuBuilder()
         .setCustomId(seed.toString())
-        .setPlaceholder("투표할 항목을 선택하세요!")
+        .setPlaceholder(lang.vote.menu.placeholder)
         .addOptions(getVoteOption())
         .setMaxValues(max)
         .setMinValues(0)
@@ -311,7 +311,7 @@ async function execute(interaction) {
     const votestopmenu = new Discord.ActionRowBuilder().addComponents(
       new Discord.SelectMenuBuilder()
         .setCustomId(seed.toString())
-        .setPlaceholder("투표할 항목을 선택하세요!")
+        .setPlaceholder(lang.vote.menu.placeholder)
         .addOptions(getVoteOption())
         .setMaxValues(max)
         .setMinValues(0)
@@ -379,7 +379,10 @@ async function execute(interaction) {
         for (let i = 0; i < list.length; i++) {
           topics.push({
             label: vote[list[i]].topic,
-            description: `첫번째 선택지: ${vote[list[i]].options[0].label}`,
+            description: lang.vote.menu.description.replaceAll(
+              "${label}",
+              vote[list[i]].options[0].label
+            ),
             value: vote[list[i]].seed,
           });
         }
@@ -390,17 +393,17 @@ async function execute(interaction) {
       if ((await getVote()) == false)
         return interaction.reply({
           ephemeral: true,
-          content: "종료할 수 있는 투표가 없어요.",
+          content: lang.vote.alert.nostop,
         });
 
       const stopembed = new Discord.EmbedBuilder()
-        .setDescription("어떤 투표를 종료할까요?")
+        .setDescription(lang.vote.embed.stop.description)
         .setColor("Blue");
 
       const stopmenu = new Discord.ActionRowBuilder().addComponents(
         new Discord.SelectMenuBuilder()
           .setCustomId("stopvote")
-          .setPlaceholder("지울 투표를 선택하세요!")
+          .setPlaceholder(lang.vote.menu.stopPlaceholder)
           .addOptions(await getVote())
           .setMaxValues(1)
       );
@@ -415,9 +418,9 @@ async function execute(interaction) {
         for (let i = 0; i < vote.length; i++) {
           topics.push({
             label: vote[i].topic,
-            description:
-              `작성자: ${vote[i].username}, ` +
-              `첫번째 선택지: ${vote[i].options[0].label}`,
+            description: lang.vote.menu.stopDescription
+              .replaceAll("${username}", vote[i].username)
+              .replaceAll("${label}", vote[i].options[0].label),
             value: vote[i].seed,
           });
         }
@@ -428,17 +431,17 @@ async function execute(interaction) {
       if ((await getVoteModerator()) == false)
         return interaction.reply({
           ephemeral: true,
-          content: "종료할 수 있는 투표가 없어요.",
+          content: lang.vote.alert.nostop,
         });
 
       const stopEmbedModerator = new Discord.EmbedBuilder()
-        .setDescription("어떤 투표를 종료할까요?")
+        .setDescription(lang.vote.embed.stop.description)
         .setColor("Blue");
 
       const stopMenuModerator = new Discord.ActionRowBuilder().addComponents(
         new Discord.SelectMenuBuilder()
           .setCustomId("stopvote")
-          .setPlaceholder("지울 투표를 선택하세요!")
+          .setPlaceholder(lang.vote.menu.stopPlaceholder)
           .addOptions(await getVoteModerator())
           .setMaxValues(1)
       );

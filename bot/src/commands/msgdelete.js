@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const quick = require("../util/quick");
+const util = require("../util/util");
 const { PermissionsBitField } = require("discord.js");
 
 module.exports = {
@@ -27,17 +27,18 @@ module.exports = {
         .setRequired(true)
     ),
   async execute(interaction) {
+    const lang = util.setLang(interaction.locale);
     const Discord = require("discord.js");
     const lm = interaction.options.getInteger("count");
     if (lm < 1)
       return await interaction.reply({
         ephemeral: true,
-        content: "메시지 수는 1~100까지 가능해요",
+        content: lang.msgdelete.alert.countRule,
       });
     if (lm > 100)
       return await interaction.reply({
         ephemeral: true,
-        content: "메시지 수는 1~100까지 가능해요",
+        content: lang.msgdelete.alert.countRule,
       });
     let deletedCount = 0;
     try {
@@ -47,21 +48,31 @@ module.exports = {
     } catch (e) {
       if (e.name === "DiscordAPIError[50034]") {
         let Embeds = new Discord.EmbedBuilder()
-          .setTitle("메시지 삭제 실패")
+          .setTitle(lang.msgdelete.embed.failed.title)
           .setColor("Red")
-          .setDescription(`2주일이 지난 메시지는 삭제할 수 없어요.`);
+          .setDescription(lang.msgdelete.embed.failed.description);
         return await interaction.reply({ ephemeral: true, embeds: [Embeds] });
       }
     }
 
     let Embeds = new Discord.EmbedBuilder()
-      .setTitle("메시지 삭제됨")
+      .setTitle(lang.msgdelete.embed.success.title)
       .setColor("Blue")
-      .setDescription(`메시지 ${deletedCount}개가 관리자에 의해 삭제되었어요.`);
+      .setDescription(
+        lang.msgdelete.embed.success.descriptionAll.replaceAll(
+          "${deletedCount}",
+          deletedCount
+        )
+      );
     let EmbedsMod = new Discord.EmbedBuilder()
-      .setTitle("메시지 삭제됨")
+      .setTitle(lang.msgdelete.embed.success.title)
       .setColor("Blue")
-      .setDescription(`메시지 ${deletedCount}개를 성공적으로 삭제했어요.`);
+      .setDescription(
+        lang.msgdelete.embed.success.descriptionMod.replaceAll(
+          "${deletedCount}",
+          deletedCount
+        )
+      );
     await interaction.channel.send({ embeds: [Embeds] });
     await interaction.reply({ ephemeral: true, embeds: [EmbedsMod] });
   },

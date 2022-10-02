@@ -69,7 +69,7 @@ module.exports = {
     if (alertnum < 0)
       return interaction.reply({
         ephemeral: true,
-        content: "경고 횟수는 1 이상이어야 해요.",
+        content: lang.warn.alert.lowcount,
       });
 
     if (!threadtime) threadtime = 12;
@@ -77,26 +77,26 @@ module.exports = {
     if (threadtime < 1 || threadtime > 12)
       return interaction.reply({
         ephemeral: true,
-        content: "스레드 유지 기간은 1~12 이어야 해요.",
+        content: lang.warn.alert.threadterm,
       });
 
     let embed = new Discord.EmbedBuilder()
       .setColor("Red")
       .setAuthor({ name: user.tag, iconURL: user.displayAvatarURL() })
-      .setTitle("제재 내역")
+      .setTitle(lang.warn.embed.title)
       .addFields(
         {
-          name: "관리자",
+          name: lang.warn.embed.field_mod,
           value: `<@${interaction.user.id}>`,
           inline: true,
         },
         {
-          name: "사유",
+          name: lang.warn.embed.field_reason,
           value: `${reason}`,
           inline: true,
         },
         {
-          name: "경고 횟수",
+          name: lang.warn.embed.field_count,
           value: `${alertnum}`,
           inline: true,
         }
@@ -114,24 +114,26 @@ module.exports = {
     }
 
     embed.addFields({
-      name: "현재 경고횟수",
+      name: lang.warn.embed.field_nowcount,
       value: `${await checkAlert(user.id)}`,
     });
 
     const row = new Discord.ActionRowBuilder().addComponents(
       new Discord.ButtonBuilder()
         .setCustomId("badalert")
-        .setLabel("제재 취소")
+        .setLabel(lang.warn.button.label)
         .setStyle(Discord.ButtonStyle.Danger)
     );
 
     alertchn.send({
-      embeds: [embed.addFields({ name: "사용자 ID", value: user.id })],
+      embeds: [
+        embed.addFields({ name: lang.warn.embed.field_userid, value: user.id }),
+      ],
       components: [row],
     });
 
     const thread = await alertchn.threads.create({
-      name: `${user.tag} | 제재`,
+      name: lang.warn.thread.name.replaceAll("${user.tag}", user.tag),
       autoArchiveDuration: 1440,
       reason: `${reason}`,
     });
@@ -139,13 +141,13 @@ module.exports = {
     thread.members.add(user.id);
 
     await thread.send({
-      content: `안녕하세요 <@${user.id}>님!\n유저님이 관리자에 의해 제재되었어요.\n<#987045538249728001>를 다시 한번 읽어보시고 더욱 쾌적한 커뮤니티를 위해 힘써주시길 바랄게요.`,
+      content: lang.warn.thread.message.warn.replaceAll("${user.id}", user.id),
       embeds: [embed],
     });
 
     await interaction.reply({
       ephemeral: true,
-      content: `**${user.tag}**님을 제재했어요. <#987045538493001819>`,
+      content: lang.warn.thread.message.mod.replaceAll("${user.tag}", user.tag),
       embeds: [embed],
     });
 

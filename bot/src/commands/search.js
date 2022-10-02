@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const util = require("../util/util");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -18,10 +19,10 @@ module.exports = {
         .setRequired(true)
     ),
   async execute(interaction) {
+    const lang = util.setLang(interaction.locale);
     await interaction.reply({
       ephemeral: true,
-      content:
-        "검색 결과를 불러오는 중...\n메시지가 지속될 경우 관리자에게 문의하세요.",
+      content: lang.search.load,
     });
     const Discord = require("discord.js");
     const googleIt = require("google-it");
@@ -52,11 +53,9 @@ module.exports = {
             .setURL(`${list[i].link}`)
             .setTimestamp()
             .setFooter({
-              text:
-                "검색: " +
-                interaction.member.user.tag +
-                " • 검색어: " +
-                option1,
+              text: lang.search.embed.footer
+                .replaceAll("${user.tag}", interaction.member.user.tag)
+                .replaceAll("${option1}", option1),
               iconURL: interaction.member.user.displayAvatarURL(),
             });
 
@@ -85,7 +84,7 @@ module.exports = {
         const menu = new Discord.ActionRowBuilder().addComponents(
           new Discord.SelectMenuBuilder()
             .setCustomId("searchResult")
-            .setPlaceholder("공유할 검색 결과를 선택하세요")
+            .setPlaceholder(lang.search.embed.menu)
             .addOptions(getEmbedList())
             .setMaxValues(1)
         );

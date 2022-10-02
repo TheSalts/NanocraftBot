@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const util = require("../util/util");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -10,6 +11,7 @@ module.exports = {
       ko: "백업 파일을 보여줍니다.",
     }),
   async execute(interaction /*,logchannel*/) {
+    const lang = util.setLang(interaction.locale);
     await interaction.deferReply({ ephemeral: true });
     const fs = require("fs");
     const readline = require("readline");
@@ -111,7 +113,7 @@ module.exports = {
           const files = res.data.files;
 
           let Embed = new Discord.EmbedBuilder()
-            .setTitle("백업 검색 결과")
+            .setTitle(lang.filelist.embed.title)
             .setColor("Blue")
             .setTimestamp();
           let fileList = "";
@@ -137,7 +139,7 @@ module.exports = {
           } else {
             interaction.editReply({
               ephemeral: true,
-              content: "백업된 파일이 없어요.",
+              content: lang.filelist.nofile,
             });
           }
         }

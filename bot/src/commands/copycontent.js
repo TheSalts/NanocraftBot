@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const quick = require("../util/quick.js");
 const { PermissionsBitField } = require("discord.js");
+const util = require("../util/util.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -67,16 +68,15 @@ module.exports = {
    * @returns
    */
   async execute(interaction) {
+    const lang = util.setLang(interaction.locale);
     if (interaction.channel.isThread()) {
       await interaction.reply({
         ephemeral: true,
-        content: "스레드 안에서는 사용할 수 없는 기능이에요.",
+        content: lang.scrap.alert.inthread,
       });
       return;
     }
-    await interaction.reply(
-      "채널에서 메시지를 가져오는 중이에요...\n메시지를 업로드하는 동안 스레드에서 다른 메시지를 하지 말아주세요!"
-    );
+    await interaction.reply(lang.scrap.alert.load);
     const Discord = require("discord.js");
     const wait = require("node:timers/promises").setTimeout;
     const channel = interaction.options.getChannel("channel");
@@ -125,14 +125,12 @@ module.exports = {
     });
 
     let Embeds = new Discord.EmbedBuilder()
-      .setTitle("설명")
+      .setTitle(lang.scrap.embed.title)
       .setColor("#B266FF");
     if (role) Embeds.setDescription(desc + `\n<@&${role.id}>`);
     else Embeds.setDescription(desc);
     await thread.send({ embeds: [Embeds] }).then(() => {
-      interaction.editReply(
-        "메시지를 성공적으로 불러왔어요!\n`12시간`뒤에 스레드가 자동으로 종료돼요."
-      );
+      interaction.editReply(lang.scrap.alert.success);
     });
     const vot = require("./vote.js");
     vot.vote(

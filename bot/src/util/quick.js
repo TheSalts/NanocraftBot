@@ -1,8 +1,10 @@
 const Discord = require("discord.js");
 const fs = require("fs");
+const util = require("./util");
 
 module.exports = {
   /**
+   * @deprecated
    * @description Get Embed when user has no permission
    * @param {string} permissionName 권한 이름
    * @returns {Discord.Embed} PermissionEmbed
@@ -29,19 +31,23 @@ module.exports = {
    * @returns {Discord.Message}
    */
   sendPermissionErrorEmbed: async function (place, permissionName) {
+    if (place.locale) var lang = util.setLang(place.locale);
     let embed;
     if (permissionName) {
       embed = new Discord.EmbedBuilder()
-        .setTitle("Error: 권한이 없습니다")
+        .setTitle(lang.quick.permission.no)
         .setColor("Red")
         .setDescription(
-          `작업을 수행하려면 ${permissionName} 권한이 필요합니다.`
+          lang.quick.permission.need.replaceAll(
+            "${permissionName}",
+            permissionName
+          )
         );
     } else {
       embed = new Discord.EmbedBuilder()
-        .setTitle("Error: 권한이 없습니다")
+        .setTitle(lang.quick.permission.no)
         .setColor("Red")
-        .setDescription(`작업을 수행하려면 해당 권한이 필요합니다.`);
+        .setDescription(lang.quick.permission.needany);
     }
     if (place.channel) {
       if (place.isRepliable())
@@ -50,6 +56,7 @@ module.exports = {
     } else return await place.send({ embeds: [embed] });
   },
   /**
+   * @deprecated
    * @description Get an Error Embed
    * @param {Error} error
    * @returns {Discord.Embed}
@@ -71,12 +78,13 @@ module.exports = {
    * @returns {Discord.Message}
    */
   sendErrorEmbed: async function (place, error) {
+    if (place.locale) var lang = util.setLang(place.locale);
     if (!error) throw new Error(`Param "error" is not an Error object`);
     let embed = new Discord.EmbedBuilder()
       .setTitle("Error")
       .setColor("Red")
       .setDescription(
-        `예기치 못한 오류가 발생했습니다.\n관리자에게 문의 바랍니다.\n${error.stack}`
+        lang.quick.error.replaceAll("${error.stack}", error.stack)
       );
     if (place.channel) {
       if (place.isRepliable())

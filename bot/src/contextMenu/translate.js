@@ -1,7 +1,7 @@
 const { ContextMenuCommandBuilder } = require("@discordjs/builders");
 const { ApplicationCommandType } = require("discord.js");
 const Discord = require("discord.js");
-const quick = require("../util/quick.js");
+const util = require("../util/util");
 
 module.exports = {
   data: new ContextMenuCommandBuilder()
@@ -12,6 +12,7 @@ module.exports = {
    * @param {Discord.MessageContextMenuCommandInteraction} interaction
    */
   async execute(interaction) {
+    const lang = util.setLang(interaction.locale);
     const translate = require("@vitalets/google-translate-api");
     const msg = interaction.targetMessage;
     const user = interaction.user;
@@ -45,7 +46,7 @@ module.exports = {
         name: user.username,
         iconURL: user.displayAvatarURL(),
       })
-        .setDescription("메시지를 번역했어요.")
+        .setDescription(lang.translate)
         .setColor("Blue")
         .setTimestamp()
         .setFooter({

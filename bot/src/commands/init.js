@@ -19,6 +19,7 @@ module.exports = {
    * @param {Discord.CommandInteraction} interaction
    */
   async execute(interaction) {
+    const lang = util.setLang(interaction.locale);
     await interaction.deferReply({ ephemeral: true });
     //초기설정 여러번
     if (fs.existsSync("./data/publicCategory.json")) {
@@ -36,8 +37,7 @@ module.exports = {
           );
           await interaction.reply({
             ephemeral: true,
-            content:
-              "초기 설정에 의해 문의 채널 연동이 초기화 되었어요.\n이전에 만든 문의는 이제 사용할 수 없어요.",
+            content: lang.init.alert,
           });
           break;
         }
@@ -100,7 +100,12 @@ module.exports = {
     );
     await interaction.editReply({
       ephemeral: true,
-      content: `설정이 완료되었습니다.\n<#${category.id}>\n<#${partnerDiscord.id}>\n<#${publicNotice.id}>\n<#${publicPatch.id}>\n<#${publicServer.id}>`,
+      content: lang.init.success
+        .replaceAll("${category.id}", category.id)
+        .replaceAll("${partnerDiscord.id}", partnerDiscord.id)
+        .replaceAll("${publicNotice.id}", publicNotice.id)
+        .replaceAll("${publicPatch.id}", publicPatch.id)
+        .replaceAll("${publicServer.id}", publicServer.id),
     });
   },
 };

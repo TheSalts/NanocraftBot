@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const util = require("../util/util");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -21,6 +22,7 @@ module.exports = {
         .setRequired(true)
     ),
   async execute(interaction /*,logchannel*/) {
+    const lang = util.setLang(interaction.locale);
     await interaction.deferReply({
       ephemeral: true,
     });
@@ -45,7 +47,7 @@ module.exports = {
       //online?
       if (body.online == false) {
         interaction.editReply({
-          content: "서버가 열려있지 않습니다!",
+          content: lang.serverinfo.nofound,
           ephemeral: true,
         });
         return;
@@ -54,15 +56,15 @@ module.exports = {
       var version = body.version;
       var online = body.players.online;
       var max = body.players.max;
-      if (body.players.list) var list = body.players.list;
-      else var list = "없음";
-      if (body.plugins) var plugins = body.plugins.raw;
-      else var plugins = "감지되지 않음";
-      if (body.mods) var mods = body.mods.raw;
-      else var mods = "감지되지 않음";
-      var motd = body.motd.clean;
-      if (body.software) var software = body.software;
-      else var software = "감지되지 않음";
+      var list = body.players.list ?? "None";
+
+      var plugins = body.plugins.raw ?? "None";
+
+      var mods = body.mods.raw ?? "None";
+
+      var motd = body.motd.clean ?? "None";
+      var software = body.software ?? "None";
+
       var country = bodys.country;
       var city = bodys.city;
       var isp = bodys.isp;
@@ -71,18 +73,30 @@ module.exports = {
       const serverinfo = new Discord.EmbedBuilder()
         .setThumbnail(`https://api.mcsrvstat.us/icon/${option1}`)
         .addFields(
-          { name: "온라인", value: `${online}/${max}` },
-          { name: "플레이어", value: `${list}`, inline: true },
-          { name: "버전", value: `${version}`, inline: true },
-          { name: "MOTD", value: `${motd}`, inline: true },
-          { name: "버킷", value: `${software}`, inline: true },
+          { name: lang.serverinfo.fields.online, value: `${online}/${max}` },
           {
-            name: "국가",
+            name: lang.serverinfo.fields.player,
+            value: `${list}`,
+            inline: true,
+          },
+          {
+            name: lang.serverinfo.fields.version,
+            value: `${version}`,
+            inline: true,
+          },
+          { name: "MOTD", value: `${motd}`, inline: true },
+          {
+            name: lang.serverinfo.fields.bukkit,
+            value: `${software}`,
+            inline: true,
+          },
+          {
+            name: lang.serverinfo.fields.country,
             value: `${country}`,
             inline: true,
           },
           {
-            name: "지역",
+            name: lang.serverinfo.fields.city,
             value: `${city}`,
             inline: true,
           },
@@ -97,12 +111,12 @@ module.exports = {
             inline: true,
           },
           {
-            name: "플러그인",
+            name: lang.serverinfo.fields.plugin,
             value: `${plugins}`,
             inline: true,
           },
           {
-            name: "모드",
+            name: lang.serverinfo.fields.mod,
             value: `${mods}`,
             inline: true,
           }

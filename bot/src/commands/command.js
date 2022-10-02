@@ -2,6 +2,7 @@ const { SlashCommandBuilder } = require("@discordjs/builders");
 const { PermissionsBitField } = require("discord.js");
 const Discord = require("discord.js");
 const quick = require("../util/quick");
+const util = require("../util/util");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -42,6 +43,7 @@ module.exports = {
    * @returns
    */
   async execute(interaction) {
+    const lang = util.setLang(interaction.locale);
     if (interaction.member.roles.cache.some((role) => role.name === "MOD")) {
     } else if (
       interaction.member.roles.cache.some(
@@ -54,22 +56,22 @@ module.exports = {
 
     const config = require("../config.json");
 
-    const command = interaction.options.getString("명령어");
+    const command = interaction.options.getString("command");
     const util = require("minecraft-server-util");
     const serverIp = "182.231.209.148";
-    const serverOpt = interaction.options.getString("서버");
+    const serverOpt = interaction.options.getString("server");
 
     if (command.length == 1)
       return await interaction.editReply({
         ephemeral: true,
-        content: "잘못된 명령어 입니다!",
+        content: lang.command.alert.wrongcommand,
       });
 
     const { NodeSSH } = require("node-ssh");
 
     await interaction.reply({
       ephemeral: true,
-      content: "명령어를 실행하는 중...",
+      content: lang.command.alert.load,
     });
     switch (serverOpt) {
       case "SMP":
@@ -105,24 +107,28 @@ module.exports = {
               console.log(result.stdout);
               console.log(result.stderr);
               let outEmbed = new Discord.EmbedBuilder()
-                .setDescription("명령어를 성공적으로 실행했습니다.")
+                .setDescription(lang.command.embed.description)
                 .addFields(
                   {
-                    name: "명령어",
+                    name: lang.command.embed.field_command,
                     value: `\`${command}\``,
                     inline: true,
                   },
                   {
                     name: "stdout",
-                    value: `${result.stdout || "없음"}`,
+                    value: `${result.stdout || "None"}`,
                     inline: true,
                   },
                   {
                     name: "stderr",
-                    value: `${result.stderr || "없음"}`,
+                    value: `${result.stderr || "None"}`,
                     inline: true,
                   },
-                  { name: "서버", value: serverOpt, inline: true }
+                  {
+                    name: lang.command.embed.field_server,
+                    value: serverOpt,
+                    inline: true,
+                  }
                 )
                 .setColor("#66FF66")
                 .setFooter({
@@ -153,15 +159,23 @@ module.exports = {
           const message = await client.execute(command);
           if (message) {
             var cmdresult = new Discord.EmbedBuilder()
-              .setDescription("명령어를 성공적으로 실행했습니다.")
+              .setDescription(lang.command.embed.description)
               .addFields(
                 {
-                  name: "명령어",
+                  name: lang.command.embed.field_command,
                   value: `\`${command}\``,
                   inline: true,
                 },
-                { name: "메세지", value: `${message}`, inline: true },
-                { name: "서버", value: serverOpt, inline: true }
+                {
+                  name: lang.command.embed.field_message,
+                  value: `${message}`,
+                  inline: true,
+                },
+                {
+                  name: lang.command.embed.field_server,
+                  value: serverOpt,
+                  inline: true,
+                }
               )
               .setColor("#66FF66")
               .setFooter({
@@ -170,14 +184,18 @@ module.exports = {
               });
           } else {
             var cmdresult = new Discord.EmbedBuilder()
-              .setDescription("명령어를 성공적으로 실행했습니다.")
+              .setDescription(lang.command.embed.description)
               .addFields(
                 {
-                  name: "명령어",
+                  name: lang.command.embed.field_command,
                   value: `\`${command}\``,
                   inline: true,
                 },
-                { name: "서버", value: serverOpt, inline: true }
+                {
+                  name: lang.command.embed.field_server,
+                  value: serverOpt,
+                  inline: true,
+                }
               )
               .setColor("#66FF66")
               .setFooter({

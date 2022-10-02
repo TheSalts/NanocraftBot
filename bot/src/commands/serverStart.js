@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const quick = require("../util/quick");
+const util = require("../util/util");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -22,6 +23,7 @@ module.exports = {
         )
     ),
   async execute(interaction, logchannel, alertchn) {
+    const lang = util.setLang(interaction.locale);
     const Discord = require("discord.js");
     const server = interaction.options.getString("server");
     if (
@@ -49,7 +51,12 @@ module.exports = {
     const embed = new Discord.EmbedBuilder()
       .setTitle("서버 실행")
       .setDescription(
-        `**${interaction.member.user.username}**님이 **${server}** 서버를 시작하려고 합니다.\n이에 동의하시려면 아래 버튼을 누르십시오.`
+        lang.serverStart
+          .replaceAll(
+            "${interaction.member.user.username}",
+            interaction.member.user.username
+          )
+          .replaceAll("${server}", server)
       )
       .setColor("#7F00FF");
 

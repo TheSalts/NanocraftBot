@@ -1,1 +1,163 @@
-{}
+{
+  "language": "ko",
+  "quick": {
+    "permission": {
+      "no": "Error: 권한이 없습니다",
+      "need": "작업을 수행하려면 ${permissionName} 권한이 필요합니다.",
+      "needany": "작업을 수행하려면 해당 권한이 필요합니다."
+    },
+    "error": "예기치 못한 오류가 발생했습니다.\n관리자에게 문의 바랍니다.\n${error.stack}"
+  },
+  "warn": {
+    "alert": {
+      "lowcount": "경고 횟수는 1 이상이어야 해요.",
+      "threadterm": "스레드 유지 기간은 1~12 이어야 해요."
+    },
+    "embed": {
+      "title": "제재 내역",
+      "field_mod": "관리자",
+      "field_reason": "사유",
+      "field_count": "경고 횟수",
+      "field_nowcount": "현재 경고횟수",
+      "field_userid": "사용자 ID"
+    },
+    "button": {
+      "label": "제재 취소"
+    },
+    "thread": {
+      "name": "${user.tag} | 제재",
+      "message": {
+        "warn": "안녕하세요 <@${user.id}>님!\n유저님이 관리자에 의해 제재되었어요.\n<#987045538249728001>를 다시 한번 읽어보시고 더욱 쾌적한 커뮤니티를 위해 힘써주시길 바랄게요.",
+        "mod": "**${user.tag}**님을 제재했어요. <#987045538493001819>"
+      }
+    }
+  },
+  "warncheck": {
+    "embed": {
+      "title": "경고 확인",
+      "description": "${user.username}님은 경고가 **${count}**개에요."
+    }
+  },
+  "command": {
+    "alert": {
+      "wrongcommand": "잘못된 명령어 입니다!",
+      "load": "명령어를 실행하는 중..."
+    },
+    "embed": {
+      "description": "명령어를 성공적으로 실행했습니다.",
+      "field_command": "명령어",
+      "field_server": "서버",
+      "field_message": "메시지"
+    }
+  },
+  "scrap": {
+    "alert": {
+      "inthread": "스레드 안에서는 사용할 수 없는 기능이에요.",
+      "load": "채널에서 메시지를 가져오는 중이에요...\n메시지를 업로드하는 동안 스레드에서 다른 메시지를 하지 말아주세요!",
+      "success": "메시지를 성공적으로 불러왔어요!\n`12시간`뒤에 스레드가 자동으로 종료돼요."
+    },
+    "embed": {
+      "title": "설명"
+    }
+  },
+  "filelist": {
+    "embed": {
+      "title": "백업 검색 결과"
+    },
+    "nofile": "백업된 파일이 없어요."
+  },
+  "init": {
+    "alert": "초기 설정에 의해 문의 채널 연동이 초기화 되었어요.\n이전에 만든 문의는 이제 사용할 수 없어요.",
+    "success": "설정이 완료되었습니다.\n<#${category.id}>\n<#${partnerDiscord.id}>\n<#${publicNotice.id}>\n<#${publicPatch.id}>\n<#${publicServer.id}>"
+  },
+  "serverinfo": {
+    "nofound": "서버가 열려있지 않습니다!",
+    "found": "서버 정보를 찾았습니다",
+    "fields": {
+      "online": "온라인",
+      "player": "플레이어",
+      "version": "버전",
+      "bukkit": "버킷",
+      "country": "국가",
+      "city": "지역",
+      "plugin": "플러그인",
+      "mod": "모드"
+    }
+  },
+  "msgdelete": {
+    "alert": {
+      "countRule": "메시지 수는 1~100까지 가능해요"
+    },
+    "embed": {
+      "success": {
+        "title": "메시지 삭제됨",
+        "descriptionAll": "메시지 ${deletedCount}개가 관리자에 의해 삭제되었어요.",
+        "descriptionMod": "메시지 ${deletedCount}개를 성공적으로 삭제했어요."
+      },
+      "failed": {
+        "title": "메시지 삭제 실패",
+        "description": "2주일이 지난 메시지는 삭제할 수 없어요."
+      }
+    }
+  },
+  "replay": {
+    "alert": {
+      "alreadyExists": "이미 존재하는 프로젝트에요. 이름을 바꿔서 다시 시도해 주세요.",
+      "alreadyRunning": "**${name}** 프로젝트는 이미 실행 중이에요.",
+      "successAdd": "프로젝트 **${name}**이(가) 추가되었어요. (id: \"${file.data.id}\")",
+      "run": "**${name}** 프로젝트가 활성화되었어요.",
+      "stop": "프로젝트가 중단되었어요.",
+      "filesent": "파일을 [DM](${msg.url})으로 전송했어요!"
+    },
+    "embed": {
+      "description": "[${projectname}링크](${url})를 생성했어요.\n전체 파일 다운로드 방법:",
+      "error": {
+        "title": "에러: DM을 보낼 수 없습니다.",
+        "description": "개인정보 보호 설정 > 서버 멤버가 보내는 다이렉트 메시지 허용하기를 체크해주셔야 다운로드가 가능합니다."
+      }
+    }
+  },
+  "search": {
+    "load": "검색 결과를 불러오는 중...\n메시지가 지속될 경우 관리자에게 문의하세요.",
+    "embed": {
+      "footer": "검색: ${user.tag} • 검색어: ${option1}",
+      "menu": "공유할 검색 결과를 선택하세요"
+    }
+  },
+  "serverStart": "**${interaction.member.user.username}**님이 **${server}** 서버를 시작하려고 합니다.\n이에 동의하시려면 아래 버튼을 누르십시오.",
+  "vote": {
+    "alert": {
+      "max": "투표는 한번에 2번까지만 할 수 있어요. 다른 투표를 종료해주세요.\n현재 투표 수: ${votedtime}",
+      "cooltime": "아직 쿨타임이 지나지 않아 사용할 수 없어요.\n쿨타임: 30분\n지난 시간: ${time}분",
+      "wrongterm": "잘못된 기간이에요.\n0~24 사이의 숫자를 입력해 주세요.",
+      "nostop": "종료할 수 있는 투표가 없어요."
+    },
+    "embed": {
+      "title": "투표 | ${topic}",
+      "description": "중복 투표: ${over} • 기간: ${term}시간",
+      "stop": {
+        "description": "어떤 투표를 종료할까요?"
+      }
+    },
+    "menu": {
+      "placeholder": "투표할 항목을 선택하세요!",
+      "description": "첫번째 선택지: ${label}",
+      "stopPlaceholder": "지울 투표를 선택하세요!",
+      "stopDescription": "작성자: ${username}, 첫번째 선택지: ${label}"
+    }
+  },
+  "whitelist": {
+    "embed": {
+      "field_nickname": "닉네임",
+      "field_server": "서버"
+    },
+    "success": "명령어를 성공적으로 실행했습니다.",
+    "error": "예기치 못한 오류가 발생했습니다.\n${error.stack}"
+  },
+  "translate": "메시지를 번역했어요.",
+  "ticket": {
+    "alert": {
+      "notfile": "파일이 올바르지 않습니다."
+    }
+  }
+}

@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const path = require("path");
 const config = require("../config.json");
-const quick = require("../util/quick");
+const Util = require("../util/util");
 const { PermissionsBitField } = require("discord.js");
 
 module.exports = {
@@ -73,6 +73,7 @@ module.exports = {
         )
     ),
   async execute(interaction) {
+    const lang = Util.setLang(interaction.locale);
     await interaction.deferReply({ ephemeral: true });
     const Discord = require("discord.js");
     const fs = require("fs");
@@ -88,9 +89,17 @@ module.exports = {
       .setColor("Green")
       .setTimestamp()
       .addFields(
-        { name: "닉네임", value: nickname, inline: true },
+        {
+          name: lang.whitelist.embed.field_nickname,
+          value: nickname,
+          inline: true,
+        },
         { name: "MOD", value: interaction.member.user.tag, inline: true },
-        { name: "서버", value: address, inline: true }
+        {
+          name: lang.whitelist.embed.field_server,
+          value: address,
+          inline: true,
+        }
       );
 
     if (address == "크리에이티브 서버") {
@@ -148,14 +157,16 @@ module.exports = {
         await client.execute(command);
         if (teamcmd) await client.execute(teamcmd);
         await interaction.editReply({
-          content: "명령어를 성공적으로 실행했습니다.",
+          content: lang.whitelist.success,
           embeds: [infoEmbed],
         });
       })
       .catch((error) => {
         const Err = new Discord.EmbedBuilder()
           .setTitle("Error")
-          .setDescription(`예기치 못한 오류가 발생했습니다.\n${error.stack}`)
+          .setDescription(
+            lang.whitelist.error.replaceAll("${error.stack}", error.stack)
+          )
           .setColor("#FF0000");
         interaction.editReply({
           embeds: [Err],

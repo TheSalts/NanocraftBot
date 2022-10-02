@@ -8,7 +8,7 @@ const {
   PermissionsBitField,
 } = require("discord.js");
 const Discord = require("discord.js");
-const quick = require("../util/quick");
+const util = require("../util/util");
 
 module.exports = {
   data: new ContextMenuCommandBuilder()
@@ -20,10 +20,11 @@ module.exports = {
    * @param {Discord.MessageContextMenuCommandInteraction} interaction
    */
   async execute(interaction) {
+    const lang = util.setLang(interaction.locale);
     if (!interaction.targetMessage.attachments.first()) {
       return await interaction.reply({
         ephemeral: true,
-        content: "파일이 올바르지 않습니다.",
+        content: lang.ticket.alert.notfile,
       });
     }
     const fileURL = interaction.targetMessage.attachments.first().url;
