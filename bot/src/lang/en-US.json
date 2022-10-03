@@ -1,1 +1,252 @@
-{}
+{
+  "language": "ko",
+  "quick": {
+    "permission": {
+      "no": "Error: No permission",
+      "need": "To perform this operation, ${permissionName} is required.",
+      "needany": "To perform this operation, Permission is required."
+    },
+    "error": "An unexpected error occurred.\nPlease contact to moderator.\n${error.stack}"
+  },
+  "warn": {
+    "alert": {
+      "lowcount": "Warn count must be upper than one.",
+      "threadterm": "Thread expiration time must be from 1 to 12."
+    },
+    "embed": {
+      "title": "Sanctions log",
+      "field_mod": "Moderator",
+      "field_reason": "Reason",
+      "field_count": "Warn count",
+      "field_nowcount": "Current warn count",
+      "field_userid": "User ID"
+    },
+    "button": {
+      "label": "Cancel sanctions"
+    },
+    "thread": {
+      "name": "${user.tag} | Sanctions",
+      "message": {
+        "warn": "Hello <@${user.id}>!\nYou were sanctioned by the moderator.\nPlease read <#987045538249728001> again and I hope you work hard for a more pleasant community.",
+        "mod": "Sanctioned **${user.tag}**. <#987045538493001819>"
+      }
+    }
+  },
+  "warncheck": {
+    "embed": {
+      "title": "Check warn",
+      "description": "${user.username} has **${count}** warns."
+    }
+  },
+  "command": {
+    "alert": {
+      "wrongcommand": "Incorrect command!",
+      "load": "Executing command..."
+    },
+    "embed": {
+      "description": "Executed command successfully.",
+      "field_command": "Command",
+      "field_server": "Server",
+      "field_message": "Message"
+    }
+  },
+  "scrap": {
+    "alert": {
+      "inthread": "You can't this command in thread.",
+      "load": "Fetching messages...\nPlease don't send messages while uploading messages!",
+      "success": "Fetched messages successfully!\nThread will be deleted after `12 hours`"
+    },
+    "embed": {
+      "title": "Description"
+    }
+  },
+  "filelist": {
+    "embed": {
+      "title": "Backup search result"
+    },
+    "nofile": "There is no backup file"
+  },
+  "init": {
+    "alert": "The ticket channel connection has been initialized by the initial setting.\nThe previously made ticket is no longer available.",
+    "success": "Setup is complete.\n<#${category.id}>\n<#${partnerDiscord.id}>\n<#${publicNotice.id}>\n<#${publicPatch.id}>\n<#${publicServer.id}>"
+  },
+  "serverinfo": {
+    "nofound": "Server is not opened!",
+    "found": "Fount server information",
+    "fields": {
+      "online": "Online",
+      "player": "Players",
+      "version": "Version",
+      "bukkit": "Bukkit",
+      "country": "Country",
+      "city": "City",
+      "plugin": "Plugins",
+      "mod": "Mods"
+    }
+  },
+  "msgdelete": {
+    "alert": {
+      "countRule": "Message count must be from 1 to 100."
+    },
+    "embed": {
+      "success": {
+        "title": "Message deleted",
+        "descriptionAll": "${deletedCount} messages were deleted by moderator.",
+        "descriptionMod": "Deleted ${deletedCount} messages successfully."
+      },
+      "failed": {
+        "title": "Failed to delete messages",
+        "description": "You can't delete messages that have passed 2 weeks."
+      }
+    }
+  },
+  "replay": {
+    "alert": {
+      "alreadyExists": "This project is already exist. Please change the name and try again.",
+      "alreadyRunning": "Project **${name}** is already running.",
+      "successAdd": "Project **${name}** was added. (id: \"${file.data.id}\")",
+      "run": "Project **${name}** has been activated.",
+      "stop": "Project was stopped.",
+      "filesent": "Sent file to [DM](${msg.url})!"
+    },
+    "embed": {
+      "description": "Generated [${projectname}URL](${url}).\nHow to download:",
+      "error": {
+        "title": "Error: Can't send DM",
+        "description": "You can download it only if you check Privacy Settings > Allow direct messages from other members in this server."
+      }
+    }
+  },
+  "search": {
+    "load": "Loading search results...\nIf the message continues, contact to moderator.",
+    "embed": {
+      "footer": "Search: ${user.tag} • Keyword: ${option1}",
+      "menu": "Select search results to share."
+    }
+  },
+  "serverStart": "**${interaction.member.user.username}** is about to start **${server}** server.\nPress the button below to accept this.",
+  "vote": {
+    "alert": {
+      "max": "You can only vote twice at a time. Please end the other vote.\nCurrent vote count: ${votedtime}",
+      "cooltime": "You can't use it because it's not cool time yet.\nCooltime: 30분\nLast time: ${time}분",
+      "wrongterm": "Wrong period.\nPlease enter a number between 0 and 24.",
+      "nostop": "There is no vote to end."
+    },
+    "embed": {
+      "title": "Vote | ${topic}",
+      "description": "Multiple votes: ${over} • Period: ${term}h",
+      "stop": {
+        "description": "Which vote should we end?"
+      }
+    },
+    "menu": {
+      "placeholder": "Choose an item to vote for!",
+      "description": "First option: ${label}",
+      "stopPlaceholder": "Choose an vote to delete!",
+      "stopDescription": "Author: ${username}, First option: ${label}"
+    }
+  },
+  "whitelist": {
+    "embed": {
+      "field_nickname": "Nickname",
+      "field_server": "Server"
+    },
+    "success": "Executed command successfully.",
+    "error": "An unexpected error occurred.\n${error.stack}"
+  },
+  "translate": "Translated the message",
+  "ticket": {
+    "alert": {
+      "notfile": "The file is not valid."
+    }
+  },
+  "captcha": {
+    "embed": {
+      "title": "Please enter your Minecraft nickname!",
+      "error": "Error: Can't send DM",
+      "dm": "You can certify it only if you check Privacy Settings > Allow direct messages from other members in this server."
+    }
+  },
+  "interaction": {
+    "menu": {
+      "vote": {
+        "alert": {
+          "cancel": "Canceled vote.",
+          "success": "Succeeded in voting.",
+          "cantcancel": "Cannot cancel vote.",
+          "stopfailed": "Failed to end vote.",
+          "count": "Current vote count:",
+          "error": "There was a problem processing the vote.\nPlease select again."
+        },
+        "embed": {
+          "votefin": "Vote end",
+          "votefinResult": "Check [Vote result](${msg.url})!",
+          "votefinished": "Vote ended"
+        }
+      },
+      "search": {
+        "sharecomplete": "Finished sharing!",
+        "shared": "Shared search result.",
+        "label": "Finished"
+      }
+    },
+    "button": {
+      "bugreport": {
+        "title": "Report Bugs",
+        "feature": "Bugged Features",
+        "how": "How to reproduce bugs",
+        "description": "Description of bugs",
+        "placeholder": {
+          "bugreport": "Bot / Discord / Ingame / Etc"
+        }
+      },
+      "reportuser": {
+        "title": "Report user",
+        "user": "User tag to report",
+        "reason": "reason",
+        "placeholder": {
+          "user": "XXXX#1234"
+        }
+      },
+      "newfeature": {
+        "title": "Server Improvement",
+        "where": "Part",
+        "description": "Descrpition",
+        "reason": "Reason",
+        "placeholder": {
+          "where": "Bot / Discord / Ingame / Etc"
+        }
+      },
+      "question": {
+        "title": "Question",
+        "where": "Part",
+        "description": "Descrpition",
+        "placeholder": {
+          "where": "Bot / Discord / Ingame / Etc"
+        }
+      },
+      "nanocraft": {
+        "title": "Join Nanocraft SMP",
+        "made": "Screenshot or viedo url of the creation you created",
+        "me": "Self introduction",
+        "tech": "How did you start technical?",
+        "goal": "Goal",
+        "mikeage": "Whether to use a mike / Your age",
+        "placeholder": {
+          "made": "Single and server are all available and can be attached directly without responding",
+          "tech": "If you don't know the technical, you don't have to write it.",
+          "goal": "Your goal",
+          "mikeage": "You can refuse to respond to your age."
+        }
+      },
+      "etc": {
+        "title": "Etc",
+        "description": "Description"
+      }
+    },
+    "modal": {
+      "response": "Submitted a response successfully.",
+      "upload": "Uploaded successfully."
+    }
+  }
+}

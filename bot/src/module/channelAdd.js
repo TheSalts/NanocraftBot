@@ -61,7 +61,7 @@ client.on("channelCreate", (channel) => {
   const rowen = new Discord.ActionRowBuilder().addComponents(
     new Discord.ButtonBuilder()
       .setCustomId("upServer")
-      .setLabel("New feature")
+      .setLabel("Server Imporvement")
       .setStyle(Discord.ButtonStyle.Primary),
     new Discord.ButtonBuilder()
       .setCustomId("qnaServer")
@@ -79,7 +79,7 @@ client.on("channelCreate", (channel) => {
       .setStyle(Discord.ButtonStyle.Danger),
     new Discord.ButtonBuilder()
       .setCustomId("memberAdd")
-      .setLabel("Sing up Nanocraft SMP")
+      .setLabel("Join Nanocraft SMP")
       .setStyle(Discord.ButtonStyle.Success),
     new Discord.ButtonBuilder()
       .setCustomId("other")
