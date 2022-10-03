@@ -54,6 +54,7 @@ client.on("interactionCreate", async (interaction) => {
  * @param {Discord.SelectMenuInteraction} interaction
  */
 async function selectMenu(interaction) {
+  const lang = util.setLang(interaction.locale);
   let vote = util.readFile(path.resolve("../data/vote.json"));
 
   if (vote.length === 0)
@@ -99,7 +100,7 @@ async function selectMenu(interaction) {
         if (voted.length < 1) {
           await interaction.reply({
             ephemeral: true,
-            content: "투표를 취소할 수 없어요.",
+            content: lang.interaction.menu.vote.alert.cantcancel,
           });
           return;
         }
@@ -107,7 +108,7 @@ async function selectMenu(interaction) {
           if (voted[i].vote.length < 1) {
             await interaction.reply({
               ephemeral: true,
-              content: "투표를 취소할 수 없어요.",
+              content: lang.interaction.menu.vote.alert.cantcancel,
             });
             return;
           }
@@ -121,11 +122,13 @@ async function selectMenu(interaction) {
               JSON.stringify(voteResult)
             );
             fs.writeFileSync("../data/voted.json", JSON.stringify(voted));
-            await msg.edit(`현재 투표 수:\n${votenum()}`);
+            await msg.edit(
+              `${lang.interaction.menu.vote.alert.count}\n${votenum()}`
+            );
           });
         await interaction.reply({
           ephemeral: true,
-          content: "투표를 취소했어요.",
+          content: lang.interaction.menu.vote.alert.cancel,
         });
         return;
       }
@@ -134,7 +137,7 @@ async function selectMenu(interaction) {
     if (interaction.values.length == 0) {
       await interaction.reply({
         ephemeral: true,
-        content: "투표를 처리하는 도중 문제가 발생했어요.\n다시 선택해 주세요.",
+        content: lang.interaction.menu.vote.alert.error,
       });
       return;
     }
@@ -275,10 +278,12 @@ async function selectMenu(interaction) {
       .then(async (msg) => {
         fs.writeFileSync("../data/voteResult.json", JSON.stringify(voteResult));
         fs.writeFileSync("../data/voted.json", JSON.stringify(voted));
-        await msg.edit(`현재 투표 수:\n${votenum()}`);
+        await msg.edit(
+          `${lang.interaction.menu.vote.alert.count}\n${votenum()}`
+        );
         await interaction.reply({
           ephemeral: true,
-          content: "투표에 성공했어요.",
+          content: lang.interaction.menu.vote.alert.success,
         });
       });
   }
@@ -291,7 +296,7 @@ async function selectMenu(interaction) {
     if (vote.length < 1)
       return interaction.reply({
         ephemeral: true,
-        content: "투표 종료에 실패했습니다.",
+        content: lang.interaction.menu.vote.alert.stopfailed,
       });
 
     for (let i = 0; i < vote.length; i++) {
@@ -301,7 +306,7 @@ async function selectMenu(interaction) {
         else
           return interaction.reply({
             ephemeral: true,
-            content: "투표 종료에 실패했습니다.",
+            content: lang.interaction.menu.vote.alert.stopfailed,
           });
       }
     }
@@ -344,13 +349,22 @@ async function selectMenu(interaction) {
       let channel = client.channels.cache.get(channelid);
       channel.messages.fetch(msgId).then(async (msg) => {
         const stopembed = new Discord.EmbedBuilder()
-          .setTitle("투표 종료 | " + vote[i].topic)
+          .setTitle(
+            `${lang.interaction.menu.vote.embed.votefin} | ` + vote[i].topic
+          )
           .setDescription(getmessage(i))
           .setColor("#00FF80")
           .setTimestamp();
         const stopEmbed = new Discord.EmbedBuilder()
-          .setTitle("투표 종료 | " + vote[i].topic)
-          .setDescription(`[투표 결과](${msg.url})를 확인하세요!`)
+          .setTitle(
+            `${lang.interaction.menu.vote.embed.votefin} | ` + vote[i].topic
+          )
+          .setDescription(
+            lang.interaction.menu.vote.embed.votefinResult.replaceAll(
+              "${msg.url}",
+              msg.url
+            )
+          )
           .setColor("#00FF80")
           .setTimestamp();
         await interaction.reply({
@@ -358,7 +372,7 @@ async function selectMenu(interaction) {
           ephemeral: false,
         });
         await msg.edit({
-          content: "투표가 종료되었습니다.",
+          content: lang.interaction.menu.vote.embed.votefinished,
           embeds: [stopembed],
           components: [vote[i].menu],
         });
@@ -440,8 +454,11 @@ async function selectMenu(interaction) {
             const row = new Discord.ActionRowBuilder().addComponents(
               new Discord.SelectMenuBuilder()
                 .setCustomId("nope")
-                .setPlaceholder("공유를 완료했어요!")
-                .addOptions({ label: "종료됨", value: "nope" })
+                .setPlaceholder(lang.interaction.menu.search.sharecomplete)
+                .addOptions({
+                  label: lang.interaction.menu.search.label,
+                  value: "nope",
+                })
                 .setDisabled(false)
             );
             await interaction.channel
@@ -455,7 +472,7 @@ async function selectMenu(interaction) {
     }
     await interaction.editReply({
       ephemeral: true,
-      content: "검색 결과를 공유했어요.",
+      content: lang.interaction.menu.search.shared,
     });
   }
 }
@@ -465,6 +482,7 @@ async function selectMenu(interaction) {
  * @param {Discord.ButtonInteraction} interaction
  */
 async function button(interaction) {
+  const lang = util.setLang(interaction.locale);
   switch (interaction.customId) {
     case "badalert":
       if (!interaction.member.roles.cache.some((role) => role.name === "MOD"))
@@ -511,19 +529,19 @@ async function button(interaction) {
     case "bugReport":
       const bugReportModal = new ModalBuilder()
         .setCustomId("bugReport")
-        .setTitle("버그 제보");
+        .setTitle(lang.interaction.button.bugreport.title);
       const bugfeature = new TextInputBuilder()
         .setCustomId("bugfeature")
-        .setLabel("버그가 발생한 기능")
-        .setPlaceholder("봇 / 디스코드 / 인게임 / 기타")
+        .setLabel(lang.interaction.button.bugreport.feature)
+        .setPlaceholder(lang.interaction.button.bugreport.placeholder.bugreport)
         .setStyle(TextInputStyle.Short);
       const howtobug = new TextInputBuilder()
         .setCustomId("howtobug")
-        .setLabel("버그 재현 방법")
+        .setLabel(lang.interaction.button.bugreport.how)
         .setStyle(TextInputStyle.Paragraph);
       const bugDescription = new TextInputBuilder()
         .setCustomId("bugDescription")
-        .setLabel("버그 설명")
+        .setLabel(lang.interaction.button.bugreport.description)
         .setStyle(TextInputStyle.Paragraph);
       const bugrow1 = new ActionRowBuilder().addComponents(bugfeature);
       const bugrow2 = new ActionRowBuilder().addComponents(howtobug);
@@ -534,15 +552,15 @@ async function button(interaction) {
     case "report":
       const reportModal = new ModalBuilder()
         .setCustomId("report")
-        .setTitle("신고");
+        .setTitle(lang.interaction.button.reportuser.title);
       const reportUser = new TextInputBuilder()
         .setCustomId("reportUser")
-        .setLabel("신고 대상")
-        .setPlaceholder("XXXX#1234")
+        .setLabel(lang.interaction.button.reportuser.user)
+        .setPlaceholder(lang.interaction.button.reportuser.placeholder.user)
         .setStyle(TextInputStyle.Short);
       const reportReason = new TextInputBuilder()
         .setCustomId("reportReason")
-        .setLabel("신고 사유")
+        .setLabel(lang.interaction.button.reportuser.reason)
         .setStyle(TextInputStyle.Paragraph);
       const reportrow1 = new ActionRowBuilder().addComponents(reportUser);
       const reportrow2 = new ActionRowBuilder().addComponents(reportReason);
@@ -552,19 +570,19 @@ async function button(interaction) {
     case "upServer":
       const upServerModal = new ModalBuilder()
         .setCustomId("upServer")
-        .setTitle("서버 개선 문의");
+        .setTitle(lang.interaction.button.newfeature.title);
       const howUp = new TextInputBuilder()
         .setCustomId("howUp")
-        .setLabel("수정 부분")
-        .setPlaceholder("봇 / 디스코드 / 인게임 / 기타")
+        .setLabel(lang.interaction.button.newfeature.where)
+        .setPlaceholder(lang.interaction.button.newfeature.placeholder.where)
         .setStyle(TextInputStyle.Short);
       const upDescription = new TextInputBuilder()
         .setCustomId("upDescription")
-        .setLabel("설명")
+        .setLabel(lang.interaction.button.newfeature.description)
         .setStyle(TextInputStyle.Paragraph);
       const whyUp = new TextInputBuilder()
         .setCustomId("whyUp")
-        .setLabel("수정해야하는 이유")
+        .setLabel(lang.interaction.button.newfeature.reason)
         .setStyle(TextInputStyle.Paragraph);
       const uprow1 = new ActionRowBuilder().addComponents(howUp);
       const uprow2 = new ActionRowBuilder().addComponents(upDescription);
@@ -576,15 +594,15 @@ async function button(interaction) {
     case "qnaServer":
       const qnaServerModal = new ModalBuilder()
         .setCustomId("qnaServer")
-        .setTitle("서버 질문");
+        .setTitle(lang.interaction.button.question.title);
       const howqna = new TextInputBuilder()
         .setCustomId("howqna")
-        .setLabel("질문 부분")
-        .setPlaceholder("봇 / 디스코드 / 인게임 / 기타")
+        .setLabel(lang.interaction.button.question.where)
+        .setPlaceholder(lang.interaction.button.question.placeholder.where)
         .setStyle(TextInputStyle.Short);
       const qnaDescription = new TextInputBuilder()
         .setCustomId("qnaDescription")
-        .setLabel("설명")
+        .setLabel(lang.interaction.button.question.description)
         .setStyle(TextInputStyle.Paragraph);
       const qnarow1 = new ActionRowBuilder().addComponents(howqna);
       const qnarow2 = new ActionRowBuilder().addComponents(qnaDescription);
@@ -594,32 +612,32 @@ async function button(interaction) {
     case "memberAdd":
       const memberAddModal = new ModalBuilder()
         .setCustomId("memberAdd")
-        .setTitle("Nanocraft SMP 신청");
+        .setTitle(lang.interaction.button.nanocraft.title);
       const whatmade = new TextInputBuilder()
         .setCustomId("whatmade")
-        .setLabel(`제작한 창작물 스크린샷 / 영상 URL`)
+        .setLabel(lang.interaction.button.nanocraft.made)
         .setRequired(false)
-        .setPlaceholder("싱글, 서버 전부 가능하며 응답하지 않고 직접 첨부 가능")
+        .setPlaceholder(lang.interaction.button.nanocraft.placeholder.made)
         .setStyle(TextInputStyle.Paragraph);
       const whoisme = new TextInputBuilder()
         .setCustomId("whoisme")
-        .setLabel("자기소개")
+        .setLabel(lang.interaction.button.nanocraft.me)
         .setStyle(TextInputStyle.Paragraph);
       const howtechnical = new TextInputBuilder()
         .setCustomId("howtechnical")
-        .setLabel(`테크니컬에 입문한 계기`)
+        .setLabel(lang.interaction.button.nanocraft.tech)
         .setRequired(false)
-        .setPlaceholder("테크니컬을 모를 경우 작성하지 않아도 됨")
+        .setPlaceholder(lang.interaction.button.nanocraft.placeholder.tech)
         .setStyle(TextInputStyle.Paragraph);
       const goal = new TextInputBuilder()
         .setCustomId("goal")
-        .setLabel("목표 의식")
-        .setPlaceholder("서버에 참여시 어떠한 목표를 가지고 임할것인지")
+        .setLabel(lang.interaction.button.nanocraft.goal)
+        .setPlaceholder(lang.interaction.button.nanocraft.placeholder.goal)
         .setStyle(TextInputStyle.Paragraph);
       const mikeage = new TextInputBuilder()
         .setCustomId("mikeage")
-        .setLabel("마이크 사용 여부 / 나이")
-        .setPlaceholder("나이는 응답 거부 가능")
+        .setLabel(lang.interaction.button.nanocraft.mikeage)
+        .setPlaceholder(lang.interaction.button.nanocraft.placeholder.mikeage)
         .setStyle(TextInputStyle.Short);
 
       const memberAddrow1 = new ActionRowBuilder().addComponents(whatmade);
@@ -639,10 +657,10 @@ async function button(interaction) {
     case "other":
       const otherModal = new ModalBuilder()
         .setCustomId("other")
-        .setTitle("기타");
+        .setTitle(lang.interaction.button.etc.title);
       const otherDescription = new TextInputBuilder()
         .setCustomId("otherDescription")
-        .setLabel("기타 문의 설명")
+        .setLabel(lang.interaction.button.etc.description)
         .setStyle(TextInputStyle.Paragraph);
       const otherrow1 = new ActionRowBuilder().addComponents(otherDescription);
       otherModal.addComponents(otherrow1);
@@ -978,7 +996,6 @@ async function button(interaction) {
  * @param {Discord.AutocompleteInteraction} interaction
  */
 async function autocomplete(interaction) {
-  console.log(1);
   switch (interaction.commandName) {
     case "리플레이":
       let list = [];
@@ -1003,6 +1020,7 @@ async function autocomplete(interaction) {
  * @param {Discord.ModalSubmitInteraction} interaction
  */
 async function modal(interaction) {
+  const lang = util.setLang(interaction.locale);
   switch (interaction.customId) {
     case "bugReport":
       const bugfeatureRes = interaction.fields.getTextInputValue("bugfeature");
@@ -1020,7 +1038,7 @@ async function modal(interaction) {
       await interaction.channel.send({ embeds: [bugReportEmbed] });
       await interaction.reply({
         ephemeral: true,
-        content: "문의를 성공적으로 제출했어요.",
+        content: lang.interaction.modal.reponse,
       });
       break;
     case "report":
@@ -1038,7 +1056,7 @@ async function modal(interaction) {
       await interaction.channel.send({ embeds: [reportEmbed] });
       await interaction.reply({
         ephemeral: true,
-        content: "문의를 성공적으로 제출했어요.",
+        content: lang.interaction.modal.reponse,
       });
       break;
     case "upServer":
@@ -1057,7 +1075,7 @@ async function modal(interaction) {
       await interaction.channel.send({ embeds: [upServerEmbed] });
       await interaction.reply({
         ephemeral: true,
-        content: "문의를 성공적으로 제출했어요.",
+        content: lang.interaction.modal.reponse,
       });
       break;
     case "qnaServer":
@@ -1074,7 +1092,7 @@ async function modal(interaction) {
       await interaction.channel.send({ embeds: [qnaServerEmbed] });
       await interaction.reply({
         ephemeral: true,
-        content: "문의를 성공적으로 제출했어요.",
+        content: lang.interaction.modal.reponse,
       });
       break;
     case "memberAdd":
@@ -1100,7 +1118,7 @@ async function modal(interaction) {
       await interaction.channel.send({ embeds: [memberAddEmbed] });
       await interaction.reply({
         ephemeral: true,
-        content: "문의를 성공적으로 제출했어요.",
+        content: lang.interaction.modal.reponse,
       });
       break;
     case "other":
@@ -1113,7 +1131,7 @@ async function modal(interaction) {
       await interaction.channel.send({ embeds: [otherEmbed] });
       await interaction.reply({
         ephemeral: true,
-        content: "문의를 성공적으로 제출했어요.",
+        content: lang.interaction.modal.reponse,
       });
       break;
     case "shortUrlGen":
@@ -1227,7 +1245,7 @@ async function modal(interaction) {
       const response = await Notion.pages.create(option);
       await interaction.reply({
         ephemeral: true,
-        content: "성공적으로 업로드했습니다.\n" + response.url,
+        content: `${lang.interaction.modal.upload}\n` + response.url,
       });
 
       break;

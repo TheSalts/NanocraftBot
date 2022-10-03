@@ -17,19 +17,12 @@ const client = new Client({
   partials: [Partials.Channel, Partials.Message, Partials.GuildMember],
 });
 const quick = require("../util/quick");
+const util = require("../util/util");
 
 client.once("ready", async () => {
   console.log("button/captcha 실행 성공");
 });
 client.login(config.token);
-
-// 파일 상태 확인
-client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isButton()) return;
-  if (interaction.customId !== "checkAPIstatus") return;
-  let channel = client.channels.cache.get("1020706773549715607");
-  await channel.send(`${__filename} 작동 중  |  ${new Date().toISOString()}`);
-});
 
 var members = {};
 function fetchmember(value) {
@@ -63,6 +56,7 @@ function deleteCaptcha(item) {
 }
 
 client.on("interactionCreate", (interaction) => {
+  const lang = util.setLang(interaction.locale);
   if (!interaction.isButton()) return;
   if (interaction.customId === "whitelist") {
     if (
@@ -75,14 +69,12 @@ client.on("interactionCreate", (interaction) => {
     )
       return quick.sendPermissionErrorEmbed(interaction, "TRUSTED MEMBER");
     const firstEmbed = new Discord.EmbedBuilder()
-      .setDescription("마인크래프트 닉네임을 입력해주세요!")
+      .setDescription(lang.captcha.embed.title)
       .setColor("#B266FF");
     interaction.user.send({ embeds: [firstEmbed] }).catch(() => {
       const errEmbed = new Discord.EmbedBuilder()
-        .setTitle("에러: DM을 보낼 수 없습니다.")
-        .setDescription(
-          "개인정보 보호 설정 > 서버 멤버가 보내는 다이렉트 메시지 허용하기를 체크해주셔야 인증이 가능합니다."
-        )
+        .setTitle(lang.captcha.embed.error)
+        .setDescription(lang.captcha.embed.dm)
         .setColor("#FF0000")
         .setImage("https://i.imgur.com/WQlZLmO.png");
       return interaction.reply({ embeds: [errEmbed], ephemeral: true });
@@ -111,17 +103,19 @@ var captcha = new Captcha(client, {
   timeout: 30000, //시간제한(ms)  선택, 기본값: 60000.
   showAttemptCount: true, //Embed Footer에 남은 횟수 표시 선택, 기본값: true.
   customPromptEmbed: new EmbedBuilder()
-    .setDescription("인증을 완료하려면 아래 이미지의 코드를 입력해주세요!")
+    .setDescription(
+      "인증을 완료하려면 아래 이미지의 코드를 입력해주세요!\nTo complete auth, please solve captcha!"
+    )
     .setColor("Blue")
     .setTitle("NANOCRAFT SMP - Creative Server | Captcha"),
   customSuccessEmbed: new EmbedBuilder()
     .setDescription(
-      "인증에 성공했습니다.\n이제 NANOCRAFT 서버를 이용하실 수 있습니다."
+      "인증에 성공했습니다.\n이제 NANOCRAFT 서버를 이용하실 수 있습니다.\n\nAuth success.\nYou can now enter NANOCRAFT SMP"
     )
     .setColor("Blue")
     .setTitle("Captcha"),
   customFailureEmbed: new EmbedBuilder()
-    .setDescription("인증에 실패했습니다.")
+    .setDescription("인증에 실패했습니다.\nAuth failed.")
     .setColor("Blue")
     .setTitle("Captcha"),
 });
@@ -158,7 +152,9 @@ client.on("messageCreate", async (message) => {
 
   async function next() {
     const secondEmbed = new Discord.EmbedBuilder()
-      .setDescription(`닉네임이 \`${message.content}\`으로 설정되었습니다.`)
+      .setDescription(
+        `닉네임이 \`${message.content}\`으로 설정되었습니다.\nNickname was set to \`${message.content}\``
+      )
       .setColor("#B266FF");
     await message.author.send({ embeds: [secondEmbed] });
     name(message.content);
@@ -211,14 +207,14 @@ captcha.on("success", async (data) => {
 
   const util = require("minecraft-server-util");
   let option1 = nickname;
-  const ip = "creative.nanocraft.kr";
+  const ip = "182.231.209.148";
 
   const Rclient = new util.RCON(ip, {
-    port: config.rconport,
+    port: 8865,
     password: config.rconpw,
   });
 
-  await Rclient.connect(ip, config.rconport)
+  await Rclient.connect(ip, 8865)
     .then(async () => {
       await Rclient.login(config.rconpw);
       await Rclient.run(`whitelist add ${option1}`);

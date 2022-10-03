@@ -54,24 +54,57 @@ client.on("channelCreate", (channel) => {
       .setLabel("기타")
       .setStyle(Discord.ButtonStyle.Secondary)
   );
+  const Embeden = new Discord.EmbedBuilder()
+    .setTitle("Ticket")
+    .setColor("Random")
+    .setDescription("Press the button below");
+  const rowen = new Discord.ActionRowBuilder().addComponents(
+    new Discord.ButtonBuilder()
+      .setCustomId("upServer")
+      .setLabel("New feature")
+      .setStyle(Discord.ButtonStyle.Primary),
+    new Discord.ButtonBuilder()
+      .setCustomId("qnaServer")
+      .setLabel("Question")
+      .setStyle(Discord.ButtonStyle.Primary),
+    new Discord.ButtonBuilder()
+      .setCustomId("bugReport")
+      .setLabel("Report bug")
+      .setStyle(Discord.ButtonStyle.Danger)
+  );
+  const row2en = new Discord.ActionRowBuilder().addComponents(
+    new Discord.ButtonBuilder()
+      .setCustomId("report")
+      .setLabel("Report user")
+      .setStyle(Discord.ButtonStyle.Danger),
+    new Discord.ButtonBuilder()
+      .setCustomId("memberAdd")
+      .setLabel("Sing up Nanocraft SMP")
+      .setStyle(Discord.ButtonStyle.Success),
+    new Discord.ButtonBuilder()
+      .setCustomId("other")
+      .setLabel("Etc")
+      .setStyle(Discord.ButtonStyle.Secondary)
+  );
   channel.send({ components: [row, row2], embeds: [Embed] });
+  channel.send({ components: [rowen, row2en], embeds: [Embeden] });
 });
 
-client.on("threadCreate", (thread, newly) => {
-  const notionChannelId = "1022476510839459880";
-  console.info(newly);
-  if (thread.parentId !== notionChannelId) return;
-  const Embed = new Discord.EmbedBuilder()
-    .setTitle("노션 동기화")
-    .setDescription(
-      `<#${thread.parentId}>에서는 노션 페이지와 연동해야 스레드를 사용할 수 있어요.\n아래 버튼을 눌러 동기화를 진행해주세요.`
-    )
-    .setColor("#36393F");
-  const row = new Discord.ActionRowBuilder().addComponents(
-    new Discord.ButtonBuilder()
-      .setCustomId("notionSync")
-      .setLabel("동기화")
-      .setStyle(Discord.ButtonStyle.Success)
-  );
-  thread.send({ embeds: [Embed], components: [row] });
-});
+// client.on("threadCreate", (thread, newly) => {
+//   const notionChannelId = "1022476510839459880";
+//   console.info(newly);
+//   if (thread.parentId !== notionChannelId) return;
+//   const Embed = new Discord.EmbedBuilder()
+//     .setTitle("노션 동기화")
+//     .setDescription(
+//       `<#${thread.parentId}>에서는 노션 페이지와 연동해야 스레드를 사용할 수 있어요.\n아래 버튼을 눌러 동기화를 진행해주세요.`
+//     )
+//     .setColor("#36393F");
+//   const row = new Discord.ActionRowBuilder().addComponents(
+//     new Discord.ButtonBuilder()
+//       .setCustomId("notionSync")
+//       .setLabel("동기화")
+//       .setStyle(Discord.ButtonStyle.Success)
+//   );
+//   thread.send({ embeds: [Embed], components: [row] });
+// });

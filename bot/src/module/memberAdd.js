@@ -25,14 +25,6 @@ client.once("ready", () => {
 
 client.login(token);
 
-// 파일 상태 확인
-client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isButton()) return;
-  if (interaction.customId !== "checkAPIstatus") return;
-  let channel = client.channels.cache.get("1020706773549715607");
-  await channel.send(`${__filename} 작동 중  |  ${new Date().toISOString()}`);
-});
-
 client.on("guildMemberAdd", (member) => {
   let channel = client.channels.cache.get("987045538249728000");
   function randomWelcomeDescription(nickname) {
