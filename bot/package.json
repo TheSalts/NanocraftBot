@@ -4,7 +4,6 @@
   "description": "nanocraft bot",
   "main": "index.js",
   "scripts": {
-    "start": "concurrently --kill-others \"node Captcha.js\" \"node rcon.js\"",
     "sr": "node SlashRegister.js"
   },
   "author": "TheSalt_",
@@ -22,7 +21,7 @@
     "@zerotwobot/youtube-notification": "^0.0.1",
     "axios": "^0.26.1",
     "better-sqlite3": "^7.5.3",
-    "canvas": "^2.9.3",
+    "canvas": "^2.10.1",
     "chalk": "^4.1.2",
     "cheerio": "^1.0.0-rc.12",
     "chokidar": "^3.5.3",

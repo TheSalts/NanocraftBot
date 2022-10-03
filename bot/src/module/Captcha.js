@@ -20,7 +20,7 @@ const quick = require("../util/quick");
 const util = require("../util/util");
 
 client.once("ready", async () => {
-  console.log("button/captcha 실행 성공");
+  console.log("Captcha 실행 성공");
 });
 client.login(config.token);
 
@@ -94,7 +94,7 @@ client.on("interactionCreate", (interaction) => {
 const { Captcha } = require("discord.js-captcha");
 
 var captcha = new Captcha(client, {
-  // roleID: roleID, // TRUSTED MEMBER
+  roleID: "987045537624784931", // TRUSTED MEMBER
   // channelID: "", //채널 고정 기능, 선택
   sendToTextChannel: false, //선택, 기본값: false
   kickOnFailure: false, //사용 X, 서버 가입 시 사용하는 기능 선택, 기본값: true.
