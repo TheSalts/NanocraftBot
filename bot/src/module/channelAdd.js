@@ -61,7 +61,7 @@ client.on("channelCreate", (channel) => {
   const rowen = new Discord.ActionRowBuilder().addComponents(
     new Discord.ButtonBuilder()
       .setCustomId("upServer")
-      .setLabel("Server Imporvement")
+      .setLabel("Server Improvement")
       .setStyle(Discord.ButtonStyle.Primary),
     new Discord.ButtonBuilder()
       .setCustomId("qnaServer")
