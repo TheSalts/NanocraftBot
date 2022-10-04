@@ -18,8 +18,8 @@ module.exports = {
         .setDescription("서버")
         .setRequired(true)
         .setChoices(
-          { name: "CREATIVE", value: "크리에이티브" },
-          { name: "SMP", value: "서바이벌" }
+          { name: "CREATIVE", value: "CREATIVE" },
+          { name: "SMP", value: "SMP" }
         )
     ),
   async execute(interaction, logchannel, alertchn) {

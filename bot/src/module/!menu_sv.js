@@ -19,8 +19,8 @@ client.once("ready", () => {
 });
 
 client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isSelectMenu()) return;
-  if (interaction?.customId !== "server_서바이벌") return;
+  if (!interaction.isButton()) return;
+  if (interaction?.customId !== "server_SMP") return;
   if (
     !interaction.member.roles.cache.some(
       (role) => role.name === "NANOCRAFT SMP"
