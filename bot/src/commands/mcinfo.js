@@ -58,11 +58,11 @@ module.exports = {
       var max = body.players.max;
       var list = body.players.list ?? "None";
 
-      var plugins = body.plugins.raw ?? "None";
+      var plugins = body.plugins?.raw ?? "None";
 
-      var mods = body.mods.raw ?? "None";
+      var mods = body.mods?.raw ?? "None";
 
-      var motd = body.motd.clean ?? "None";
+      var motd = body.motd?.clean ?? "None";
       var software = body.software ?? "None";
 
       var country = bodys.country;

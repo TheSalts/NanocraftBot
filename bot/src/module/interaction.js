@@ -60,7 +60,11 @@ async function selectMenu(interaction) {
   if (vote.length === 0)
     switch (interaction.customId) {
       case "stopvote":
-        await stopvote();
+        await stopvote(
+          interaction,
+          interaction.values[0],
+          interaction.member.user.id
+        );
         break;
       case "searchResult":
         await searchresult();
@@ -73,7 +77,11 @@ async function selectMenu(interaction) {
           await votes(i);
           break;
         case "stopvote":
-          await stopvote();
+          await stopvote(
+            interaction,
+            interaction.values[0],
+            interaction.member.user.id
+          );
           break;
         case "searchResult":
           await searchresult();
@@ -286,133 +294,6 @@ async function selectMenu(interaction) {
           content: lang.interaction.menu.vote.alert.success,
         });
       });
-  }
-
-  async function stopvote() {
-    let seed = interaction.values[0];
-
-    var vote = util.readFile(path.resolve("../data/vote.json"));
-
-    if (vote.length < 1)
-      return interaction.reply({
-        ephemeral: true,
-        content: lang.interaction.menu.vote.alert.stopfailed,
-      });
-
-    for (let i = 0; i < vote.length; i++) {
-      if (seed == vote[i].seed) break;
-      if (vote.length - 1 == i) {
-        if (seed == vote[i].seed) break;
-        else
-          return interaction.reply({
-            ephemeral: true,
-            content: lang.interaction.menu.vote.alert.stopfailed,
-          });
-      }
-    }
-
-    var voted = util.readFile(path.resolve("../data/voted.json"));
-
-    var voteresult = util.readFile(path.resolve("../data/voteResult.json"));
-
-    let votedList = [];
-    for (let i = 0; i < voteresult.length; i++) {
-      if (voteresult[i].seed == interaction.values[0])
-        for (let v = 0; v < voteresult[i].voted.length; v++) {
-          votedList.push({
-            name: voteresult[i].voted[v].name,
-            value: voteresult[i].voted[v].value,
-          });
-        }
-    }
-
-    function getmessage(i) {
-      let array = [];
-      for (let v = 0; v < voteresult.length; v++)
-        if (vote[i].seed == voteresult[v].seed)
-          for (let s = 0; s < voteresult[v].voted.length; s++) {
-            array.push({
-              name: voteresult[v].voted[s].name,
-              value: voteresult[v].voted[s].value,
-            });
-          }
-      let msg = "";
-      for (let v = 0; v < array.length; v++) {
-        if (array.length - 1 == v) {
-          msg = msg + `${array[v].name}: ${array[v].value}표`;
-        } else msg = msg + `${array[v].name}: ${array[v].value}표\n`;
-      }
-      return "```md\n" + msg + "\n```";
-    }
-
-    function setmessage(msgId, channelid, i) {
-      let channel = client.channels.cache.get(channelid);
-      channel.messages.fetch(msgId).then(async (msg) => {
-        const stopembed = new Discord.EmbedBuilder()
-          .setTitle(
-            `${lang.interaction.menu.vote.embed.votefin} | ` + vote[i].topic
-          )
-          .setDescription(getmessage(i))
-          .setColor("#00FF80")
-          .setTimestamp();
-        const stopEmbed = new Discord.EmbedBuilder()
-          .setTitle(
-            `${lang.interaction.menu.vote.embed.votefin} | ` + vote[i].topic
-          )
-          .setDescription(
-            lang.interaction.menu.vote.embed.votefinResult.replaceAll(
-              "${msg.url}",
-              msg.url
-            )
-          )
-          .setColor("#00FF80")
-          .setTimestamp();
-        await interaction.reply({
-          embeds: [stopEmbed],
-          ephemeral: false,
-        });
-        await msg.edit({
-          content: lang.interaction.menu.vote.embed.votefinished,
-          embeds: [stopembed],
-          components: [vote[i].menu],
-        });
-        await msg.unpin();
-        for (let i = 0; i < vote.length; i++) {
-          if (vote[i].seed === seed) {
-            await vote.splice(i, 1);
-            fs.writeFileSync("../data/vote.json", JSON.stringify(vote));
-          }
-        }
-
-        for (let i = 0; i < voteresult.length; i++)
-          if (voteresult[i].seed === seed) {
-            await voteresult.splice(i, 1);
-            fs.writeFileSync(
-              "../data/voteResult.json",
-              JSON.stringify(voteresult)
-            );
-          }
-
-        for (let i = 0; i < voted.length; i++)
-          if (voted[i].seed === seed) {
-            await voted.splice(i, 1);
-            fs.writeFileSync("../data/voted.json", JSON.stringify(voted));
-          }
-      });
-      let readvotetime = fs.readFileSync("../data/votetime.json", "utf8");
-      let votetime = JSON.parse(readvotetime);
-      for (let i = 0; i < votetime.length; i++) {
-        if (votetime[i].user == interaction.member.user.id)
-          votetime.splice(i, 1);
-      }
-      fs.writeFileSync("../data/votetime.json", JSON.stringify(votetime));
-    }
-
-    for (let i = 0; i < vote.length; i++)
-      if (vote[i].seed == seed) {
-        setmessage(vote[i].message, vote[i].channel, i);
-        break;
-      }
   }
 
   async function searchresult() {
@@ -1367,26 +1248,47 @@ async function modal(interaction) {
 }
 
 /**
- * @description stop vote
+ * @param {Discord.Interaction|Discord.Channel} place
  * @param {string} seed
- * @param {string} userid
+ * @param {Discord.Snowflake} userid
  */
-module.exports.stopvote = async function (seed, userid) {
-  var vote = util.readFile("../data/vote.json");
+async function stopvote(place, seed, userid) {
+  let votePath = require.resolve("../data/vote.json");
+  var vote = util.readFile(votePath);
 
-  if (vote.length < 1) throw new Error("Invalid vote");
+  if (vote.length < 1) {
+    if (place.channel)
+      return place.reply({
+        ephemeral: true,
+        content: lang.interaction.menu.vote.alert.stopfailed,
+      });
+    else
+      return place.send({
+        content: lang.interaction.menu.vote.alert.stopfailed,
+      });
+  }
 
   for (let i = 0; i < vote.length; i++) {
     if (seed == vote[i].seed) break;
     if (vote.length - 1 == i) {
       if (seed == vote[i].seed) break;
-      else throw new Error("Failed to stop vote");
+      else {
+        if (place.channel)
+          return place.reply({
+            ephemeral: true,
+            content: lang.interaction.menu.vote.alert.stopfailed,
+          });
+        else
+          return place.send({
+            content: lang.interaction.menu.vote.alert.stopfailed,
+          });
+      }
     }
   }
 
-  var voted = util.readFile("../data/voted.json");
+  var voted = util.readFile(path.resolve("../data/voted.json"));
 
-  var voteresult = util.readFile("../data/voteResult.json");
+  var voteresult = util.readFile(path.resolve("../data/voteResult.json"));
 
   let votedList = [];
   for (let i = 0; i < voteresult.length; i++) {
@@ -1422,21 +1324,37 @@ module.exports.stopvote = async function (seed, userid) {
     let channel = client.channels.cache.get(channelid);
     channel.messages.fetch(msgId).then(async (msg) => {
       const stopembed = new Discord.EmbedBuilder()
-        .setTitle("투표 종료 | " + vote[i].topic)
+        .setTitle(
+          `${lang.interaction.menu.vote.embed.votefin} | ` + vote[i].topic
+        )
         .setDescription(getmessage(i))
         .setColor("#00FF80")
         .setTimestamp();
       const stopEmbed = new Discord.EmbedBuilder()
-        .setTitle("투표 종료 | " + vote[i].topic)
-        .setDescription(`[투표 결과](${msg.url})를 확인하세요!`)
+        .setTitle(
+          `${lang.interaction.menu.vote.embed.votefin} | ` + vote[i].topic
+        )
+        .setDescription(
+          lang.interaction.menu.vote.embed.votefinResult.replaceAll(
+            "${msg.url}",
+            msg.url
+          )
+        )
         .setColor("#00FF80")
         .setTimestamp();
-      await channel.send({
-        embeds: [stopEmbed],
-        ephemeral: false,
-      });
+      if (place.channel) {
+        await place.reply({
+          embeds: [stopEmbed],
+          ephemeral: false,
+        });
+      } else {
+        await place.send({
+          embeds: [stopEmbed],
+          ephemeral: false,
+        });
+      }
       await msg.edit({
-        content: "투표가 종료되었습니다.",
+        content: lang.interaction.menu.vote.embed.votefinished,
         embeds: [stopembed],
         components: [vote[i].menu],
       });
@@ -1463,9 +1381,10 @@ module.exports.stopvote = async function (seed, userid) {
           fs.writeFileSync("../data/voted.json", JSON.stringify(voted));
         }
     });
-    let votetime = util.readFile("../data/votetime.json");
+    let readvotetime = fs.readFileSync("../data/votetime.json", "utf8");
+    let votetime = JSON.parse(readvotetime);
     for (let i = 0; i < votetime.length; i++) {
-      if (votetime.user[i] == userid) votetime.splice(i, 1);
+      if (votetime[i].user == userid) votetime.splice(i, 1);
     }
     fs.writeFileSync("../data/votetime.json", JSON.stringify(votetime));
   }
@@ -1475,4 +1394,6 @@ module.exports.stopvote = async function (seed, userid) {
       setmessage(vote[i].message, vote[i].channel, i);
       break;
     }
-};
+}
+
+module.exports.stopvote = stopvote;

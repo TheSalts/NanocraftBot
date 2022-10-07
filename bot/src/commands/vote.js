@@ -355,7 +355,7 @@ async function execute(interaction) {
           nowDate.setTime(nowDate.getHours() + term);
           util.schedule(
             nowDate,
-            await stopvote(),
+            await stopvote(message.channel, seed),
             seed,
             interaction.member.user.id
           );
