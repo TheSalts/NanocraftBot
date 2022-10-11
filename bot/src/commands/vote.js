@@ -220,6 +220,7 @@ async function execute(interaction) {
       options: options,
     });
     VoteObject.sendVote();
+    VoteObject.setCron();
     //
   } else if (interaction.options.getSubcommand() === "stop") {
     if (!fs.existsSync(require.resolve("../data/vote.json")))
@@ -356,21 +357,6 @@ class Vote {
     if (message) this.message = message;
     if (stopmenu) this.stopmenu = stopmenu;
     if (client) this.client = client;
-
-    let stopDate = new Date();
-    stopDate.setHours(stopDate.getHours() + term);
-
-    const dateToCron = (date) => {
-      const minutes = date.getMinutes();
-      const hours = date.getHours();
-      const days = date.getDate();
-      const months = date.getMonth() + 1;
-      const dayOfWeek = date.getDay();
-
-      return `${minutes} ${hours} ${days} ${months} ${dayOfWeek}`;
-    };
-
-    cron.schedule(dateToCron(stopDate), () => this.stopVote());
   }
 
   toJSON() {
@@ -391,6 +377,23 @@ class Vote {
     if (this.message) json["message"] = this.message.toJSON();
     if (this.stopmenu) json["stopmenu"] = this.stopmenu.toJSON();
     return json;
+  }
+
+  setCron() {
+    let stopDate = new Date();
+    stopDate.setHours(stopDate.getHours() + term);
+
+    const dateToCron = (date) => {
+      const minutes = date.getMinutes();
+      const hours = date.getHours();
+      const days = date.getDate();
+      const months = date.getMonth() + 1;
+      const dayOfWeek = date.getDay();
+
+      return `${minutes} ${hours} ${days} ${months} ${dayOfWeek}`;
+    };
+
+    cron.schedule(dateToCron(stopDate), () => this.stopVote());
   }
 
   /**
