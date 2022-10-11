@@ -1,12 +1,12 @@
 {
-  "language": "ko",
+  "language": "en-US",
   "quick": {
     "permission": {
       "no": "Error: No permission",
       "need": "To perform this operation, ${permissionName} is required.",
       "needany": "To perform this operation, Permission is required."
     },
-    "error": "An unexpected error occurred.\nPlease contact to moderator.\n${error.stack}"
+    "error": "An unexpected error occurred.\nPlease contact to moderator."
   },
   "warn": {
     "alert": {
@@ -130,7 +130,9 @@
       "max": "You can only vote twice at a time. Please end the other vote.\nCurrent vote count: ${votedtime}",
       "cooltime": "You can't use it because it's not cool time yet.\nCooltime: 30분\nLast time: ${time}분",
       "wrongterm": "Wrong period.\nPlease enter a number between 0 and 24.",
-      "nostop": "There is no vote to end."
+      "nostop": "There is no vote to end.",
+      "cancelvotename": "Cancel vote",
+      "cancelvotevalue": "Cancel vote I selected."
     },
     "embed": {
       "title": "Vote | ${topic}",
@@ -168,6 +170,9 @@
     }
   },
   "interaction": {
+    "error": {
+      "wrongInteraction": "Wrong interaction!"
+    },
     "menu": {
       "vote": {
         "alert": {

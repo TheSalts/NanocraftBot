@@ -1,7 +1,6 @@
 const { token } = require("../config.json");
 const Discord = require("discord.js");
 const config = require("../config.json");
-const quick = require("../util/quick");
 const util = require("../util/util");
 
 const { GatewayIntentBits, Partials } = require("discord.js");
@@ -105,7 +104,7 @@ async function getData() {
         .setAuthor(Author)
         .setFields(fields[0], fields[1], fields[2])
         .setURL(data.url)
-        .setColor("#36393F")
+        .setColor("#2F3136")
         .setFooter({
           text: "Notion",
           iconURL:

@@ -9,10 +9,10 @@ const {
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
-  InteractionType,
   PermissionsBitField,
   EmbedBuilder,
 } = require("discord.js");
+const { vote } = require("../commands/vote");
 const fetch = require("node-fetch");
 const client = new Client({
   intents: [
@@ -30,11 +30,10 @@ const client = new Client({
   ],
 });
 const fs = require("fs");
-const quick = require("../util/quick");
 const util = require("../util/util");
 const path = require("path");
 const notion = require("@notionhq/client");
-const dataApi = require("../util/dataApi");
+const quick = require("../util/quick");
 
 client.login(config.token);
 
@@ -55,245 +54,68 @@ client.on("interactionCreate", async (interaction) => {
  */
 async function selectMenu(interaction) {
   const lang = util.setLang(interaction.locale);
-  let vote = util.readFile(path.resolve("../data/vote.json"));
+  if (!fs.existsSync(require.resolve("../data/vote.json")))
+    fs.writeFileSync(require.resolve("../data/vote.json"), JSON.stringify({}));
+  const dataRead = fs.readFileSync(
+    require.resolve("../data/vote.json"),
+    "utf8"
+  );
+  const votedata = JSON.parse(dataRead);
 
-  if (vote.length === 0)
-    switch (interaction.customId) {
-      case "stopvote":
-        await stopvote(
-          interaction,
-          interaction.values[0],
-          interaction.member.user.id
-        );
+  let id = interaction.customId;
+  switch (id) {
+    case "stopvote":
+      await stopvote(interaction.values[0]);
+      break;
+    case "searchResult":
+      await searchresult();
+      break;
+    default:
+      if (votedata[id]) {
+        await voting(id);
         break;
-      case "searchResult":
-        await searchresult();
-        break;
-    }
-  else
-    for (let i = 0; i < vote.length; i++) {
-      switch (interaction.customId) {
-        case vote[i].seed:
-          await votes(i);
-          break;
-        case "stopvote":
-          await stopvote(
-            interaction,
-            interaction.values[0],
-            interaction.member.user.id
-          );
-          break;
-        case "searchResult":
-          await searchresult();
-          break;
       }
+      await quick.sendErrorEmbed(
+        interaction,
+        lang.interaction.error.wrongInteraction
+      );
+
+      break;
+  }
+
+  async function voting(seed) {
+    if (!fs.existsSync(require.resolve("../data/vote.json")))
+      fs.writeFileSync(
+        require.resolve("../data/vote.json"),
+        JSON.stringify({})
+      );
+    const dataRead = fs.readFileSync(
+      require.resolve("../data/vote.json"),
+      "utf8"
+    );
+    const voteData = JSON.parse(dataRead);
+    const data = voteData[seed];
+    if (!data) {
+      return false;
     }
+    data["client"] = client;
 
-  async function votes(num) {
-    var voted = util.readFile(path.resolve("../data/voted.json"));
+    let VoteObject = new vote(data);
+    let select = interaction.values;
 
-    var voteResult = util.readFile(path.resolve("../data/voteResult.json"));
-
-    if (interaction.values.length != 1) var selected = interaction.values;
-    else var selected = interaction.values[0];
-
-    for (let i = 0; i < voted.length; i++) {
-      if (voted[i].vote.length < 1) {
-        voted.splice(i, 1);
-      }
-    }
-
-    for (let i = 0; i < interaction.values.length; i++) {
-      if (interaction.values[i] == "cancelvote") {
-        if (voted.length < 1) {
-          await interaction.reply({
-            ephemeral: true,
-            content: lang.interaction.menu.vote.alert.cantcancel,
-          });
-          return;
-        }
-        for (let i = 0; i < voted.length; i++) {
-          if (voted[i].vote.length < 1) {
-            await interaction.reply({
-              ephemeral: true,
-              content: lang.interaction.menu.vote.alert.cantcancel,
-            });
-            return;
-          }
-        }
-        await deleteValue();
-        await interaction.channel.messages
-          .fetch(vote[num].message)
-          .then(async (msg) => {
-            fs.writeFileSync(
-              "../data/voteResult.json",
-              JSON.stringify(voteResult)
-            );
-            fs.writeFileSync("../data/voted.json", JSON.stringify(voted));
-            await msg.edit(
-              `${lang.interaction.menu.vote.alert.count}\n${votenum()}`
-            );
-          });
-        await interaction.reply({
-          ephemeral: true,
-          content: lang.interaction.menu.vote.alert.cancel,
-        });
-        return;
-      }
-    }
-
-    if (interaction.values.length == 0) {
-      await interaction.reply({
+    if (select.find((item) => item === "cancelvote")) {
+      await VoteObject.cancelVote(interaction.member.user.id);
+      return await interaction.reply({
         ephemeral: true,
-        content: lang.interaction.menu.vote.alert.error,
+        content: lang.interaction.menu.vote.alert.cancel,
       });
-      return;
     }
+    await VoteObject.vote(interaction.member.user.id, select);
 
-    if (voted.length == 0) {
-      await voteQ();
-      await addValue();
-    } else
-      for (let i = 0; i < voted.length; i++) {
-        if (voted[i].seed == vote[num].seed) {
-          if (voted[i].user == interaction.user.id) {
-            await voteQ();
-            await deleteValue();
-            await addValue();
-            break;
-          }
-
-          if (voted.length - 1 == i) {
-            if (voted[i].user == interaction.user.id) {
-              await voteQ();
-              await deleteValue();
-              await addValue();
-              break;
-            } else {
-              await voteQ();
-              await addValue();
-              break;
-            }
-          }
-        } else {
-          if (voted.length - 1 == i) {
-            await voteQ();
-            await addValue();
-            break;
-          }
-        }
-      }
-
-    async function voteQ() {
-      for (let i = 0; i < voteResult.length; i++) {
-        if (voteResult[i].seed == vote[num].seed)
-          for (let i2 = 0; i2 < voteResult[i].voted.length; i2++) {
-            if (vote[num].options[i2].value == selected)
-              await setValue(selected);
-            else if (selected.length > 1) {
-              for (let i3 = 0; i3 < selected.length; i3++) {
-                if (vote[num].options[i2].value == selected[i3])
-                  await setValue(selected[i3]);
-              }
-            }
-          }
-      }
-    }
-
-    async function addValue() {
-      voted.push({
-        seed: vote[num].seed,
-        user: interaction.member.user.id,
-        vote: interaction.values,
-      });
-      fs.writeFileSync("../data/voted.json", JSON.stringify(voted));
-    }
-
-    async function deleteValue() {
-      let array = [];
-      for (let i = 0; i < voted.length; i++) {
-        if (voted[i].seed == vote[num].seed) {
-          if (voted[i].user == interaction.user.id) {
-            for (let j = 0; j < voted[i].vote.length; j++) {
-              array.push(voted[i].vote[j]);
-            }
-            voted.splice(i, 1);
-            deleteValues();
-            break;
-          }
-        }
-      }
-
-      fs.writeFileSync("../data/voted.json", JSON.stringify(voted));
-      fs.writeFileSync("../data/voteResult.json", JSON.stringify(voteResult));
-
-      function deleteValues() {
-        let list = [];
-        for (let i = 0; i < array.length; i++) {
-          for (let v = 0; v < vote[num].options.length; v++)
-            if (array[i] == vote[num].options[v].value)
-              list.push(vote[num].options[v].label);
-        }
-
-        for (let i = 0; i < voteResult.length; i++) {
-          if (voteResult[i].seed == vote[num].seed)
-            for (let v = 0; v < voteResult[i].voted.length; v++)
-              for (let s = 0; s < list.length; s++) {
-                if (list[s] == voteResult[i].voted[v].name) {
-                  voteResult[i].voted[v].value -= 1;
-                }
-              }
-        }
-      }
-    }
-
-    async function setValue(value) {
-      let list = [];
-      for (let i = 0; i < vote[num].options.length; i++) {
-        if (vote[num].options[i].value == value)
-          list.push(vote[num].options[i].label);
-      }
-
-      for (let i = 0; i < voteResult.length; i++) {
-        if (voteResult[i])
-          for (let v = 0; v < voteResult[i].voted.length; v++)
-            for (let l = 0; l < list.length; l++)
-              if (voteResult[i].voted[v].name == list[l])
-                voteResult[i].voted[v].value++;
-      }
-    }
-
-    function votenum() {
-      let r = ``;
-      for (let i = 0; i < voteResult.length; i++) {
-        if (vote[num].seed == voteResult[i].seed)
-          for (let v = 0; v < voteResult[i].voted.length; v++) {
-            if (voteResult[i].voted.length - 1 != v)
-              r =
-                r +
-                `${voteResult[i].voted[v].name}: ${voteResult[i].voted[v].value}표\n`;
-            else
-              r =
-                r +
-                `${voteResult[i].voted[v].name}: ${voteResult[i].voted[v].value}표`;
-          }
-      }
-      return `\`${r}\``;
-    }
-
-    await interaction.channel.messages
-      .fetch(vote[num].message)
-      .then(async (msg) => {
-        fs.writeFileSync("../data/voteResult.json", JSON.stringify(voteResult));
-        fs.writeFileSync("../data/voted.json", JSON.stringify(voted));
-        await msg.edit(
-          `${lang.interaction.menu.vote.alert.count}\n${votenum()}`
-        );
-        await interaction.reply({
-          ephemeral: true,
-          content: lang.interaction.menu.vote.alert.success,
-        });
-      });
+    await interaction.reply({
+      ephemeral: true,
+      content: lang.interaction.menu.vote.alert.success,
+    });
   }
 
   async function searchresult() {
@@ -1247,153 +1069,21 @@ async function modal(interaction) {
   }
 }
 
-/**
- * @param {Discord.Interaction|Discord.Channel} place
- * @param {string} seed
- * @param {Discord.Snowflake} userid
- */
-async function stopvote(place, seed, userid) {
-  let votePath = require.resolve("../data/vote.json");
-  var vote = util.readFile(votePath);
-
-  if (vote.length < 1) {
-    if (place.channel)
-      return place.reply({
-        ephemeral: true,
-        content: lang.interaction.menu.vote.alert.stopfailed,
-      });
-    else
-      return place.send({
-        content: lang.interaction.menu.vote.alert.stopfailed,
-      });
-  }
-
-  for (let i = 0; i < vote.length; i++) {
-    if (seed == vote[i].seed) break;
-    if (vote.length - 1 == i) {
-      if (seed == vote[i].seed) break;
-      else {
-        if (place.channel)
-          return place.reply({
-            ephemeral: true,
-            content: lang.interaction.menu.vote.alert.stopfailed,
-          });
-        else
-          return place.send({
-            content: lang.interaction.menu.vote.alert.stopfailed,
-          });
-      }
-    }
-  }
-
-  var voted = util.readFile(path.resolve("../data/voted.json"));
-
-  var voteresult = util.readFile(path.resolve("../data/voteResult.json"));
-
-  let votedList = [];
-  for (let i = 0; i < voteresult.length; i++) {
-    if (voteresult[i].seed == seed)
-      for (let v = 0; v < voteresult[i].voted.length; v++) {
-        votedList.push({
-          name: voteresult[i].voted[v].name,
-          value: voteresult[i].voted[v].value,
-        });
-      }
-  }
-
-  function getmessage(i) {
-    let array = [];
-    for (let v = 0; v < voteresult.length; v++)
-      if (vote[i].seed == voteresult[v].seed)
-        for (let s = 0; s < voteresult[v].voted.length; s++) {
-          array.push({
-            name: voteresult[v].voted[s].name,
-            value: voteresult[v].voted[s].value,
-          });
-        }
-    let msg = "";
-    for (let v = 0; v < array.length; v++) {
-      if (array.length - 1 == v) {
-        msg = msg + `${array[v].name}: ${array[v].value}표`;
-      } else msg = msg + `${array[v].name}: ${array[v].value}표\n`;
-    }
-    return "```md\n" + msg + "\n```";
-  }
-
-  function setmessage(msgId, channelid, i) {
-    let channel = client.channels.cache.get(channelid);
-    channel.messages.fetch(msgId).then(async (msg) => {
-      const stopembed = new Discord.EmbedBuilder()
-        .setTitle(
-          `${lang.interaction.menu.vote.embed.votefin} | ` + vote[i].topic
-        )
-        .setDescription(getmessage(i))
-        .setColor("#00FF80")
-        .setTimestamp();
-      const stopEmbed = new Discord.EmbedBuilder()
-        .setTitle(
-          `${lang.interaction.menu.vote.embed.votefin} | ` + vote[i].topic
-        )
-        .setDescription(
-          lang.interaction.menu.vote.embed.votefinResult.replaceAll(
-            "${msg.url}",
-            msg.url
-          )
-        )
-        .setColor("#00FF80")
-        .setTimestamp();
-      if (place.channel) {
-        await place.reply({
-          embeds: [stopEmbed],
-          ephemeral: false,
-        });
-      } else {
-        await place.send({
-          embeds: [stopEmbed],
-          ephemeral: false,
-        });
-      }
-      await msg.edit({
-        content: lang.interaction.menu.vote.embed.votefinished,
-        embeds: [stopembed],
-        components: [vote[i].menu],
-      });
-      await msg.unpin();
-      for (let i = 0; i < vote.length; i++) {
-        if (vote[i].seed === seed) {
-          await vote.splice(i, 1);
-          fs.writeFileSync("../data/vote.json", JSON.stringify(vote));
-        }
-      }
-
-      for (let i = 0; i < voteresult.length; i++)
-        if (voteresult[i].seed === seed) {
-          await voteresult.splice(i, 1);
-          fs.writeFileSync(
-            "../data/voteResult.json",
-            JSON.stringify(voteresult)
-          );
-        }
-
-      for (let i = 0; i < voted.length; i++)
-        if (voted[i].seed === seed) {
-          await voted.splice(i, 1);
-          fs.writeFileSync("../data/voted.json", JSON.stringify(voted));
-        }
-    });
-    let readvotetime = fs.readFileSync("../data/votetime.json", "utf8");
-    let votetime = JSON.parse(readvotetime);
-    for (let i = 0; i < votetime.length; i++) {
-      if (votetime[i].user == userid) votetime.splice(i, 1);
-    }
-    fs.writeFileSync("../data/votetime.json", JSON.stringify(votetime));
-  }
-
-  for (let i = 0; i < vote.length; i++)
-    if (vote[i].seed == seed) {
-      setmessage(vote[i].message, vote[i].channel, i);
-      break;
-    }
-}
-
 module.exports.stopvote = stopvote;
+
+async function stopvote(seed) {
+  if (!fs.existsSync(require.resolve("../data/vote.json")))
+    fs.writeFileSync(require.resolve("../data/vote.json"), JSON.stringify({}));
+  const dataRead = fs.readFileSync(
+    require.resolve("../data/vote.json"),
+    "utf8"
+  );
+  const voteData = JSON.parse(dataRead);
+  const data = voteData[seed];
+  if (!data) {
+    return false;
+  }
+  data["client"] = client;
+  const Vote = new vote(data);
+  await Vote.stopVote();
+}

@@ -55,7 +55,7 @@ module.exports = {
       ],
     });
     let partnerDiscord = await interaction.guild.channels.create({
-      name: "📣│파트너-디스코드",
+      name: "🤝│파트너",
       type: Discord.ChannelType.GuildText,
       parent: category,
     });

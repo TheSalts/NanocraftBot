@@ -67,7 +67,7 @@ module.exports = {
       .setTitle("Error")
       .setColor("Red")
       .setDescription(
-        `예기치 못한 오류가 발생했습니다.\n관리자에게 문의 바랍니다.\n${error.stack}`
+        `예기치 못한 오류가 발생했습니다.\n관리자에게 문의 바랍니다.\n\n${error.stack}`
       );
   },
   /**
@@ -79,13 +79,11 @@ module.exports = {
    */
   sendErrorEmbed: async function (place, error) {
     if (place.locale) var lang = util.setLang(place.locale);
-    if (!error) throw new Error(`Param "error" is not an Error object`);
     let embed = new Discord.EmbedBuilder()
       .setTitle("Error")
       .setColor("Red")
-      .setDescription(
-        lang.quick.error.replaceAll("${error.stack}", error.stack)
-      );
+      .setDescription(lang.quick.error)
+      .addFields({ name: "error description", value: error });
     if (place.channel) {
       if (place.isRepliable())
         return await place.reply({ embeds: [embed], ephemeral: true });

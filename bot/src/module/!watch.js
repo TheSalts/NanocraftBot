@@ -91,7 +91,7 @@ async function storeFiles(auth, filename, filepath, filesize) {
 
   let parent = ["1l1jatTkGWFV-XsLk-MasMV17QHtmWPeg"];
   let getData = await dataApi.get({ type: "replayProject" });
-  if (getData[0]) parent = getData[0].value;
+  if (getData[0]) parent = [getData[0].value];
 
   var fileMetadata = {
     name: filename,

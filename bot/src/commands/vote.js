@@ -1,8 +1,11 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const quick = require("../util/quick.js");
 const util = require("../util/util");
+const Discord = require("discord.js");
+const fs = require("fs");
+const crypto = require("crypto");
+const cron = require("node-cron");
 
-module.exports.data = new SlashCommandBuilder()
+const data = new SlashCommandBuilder()
   .setName("vote")
   .setNameLocalizations({ "en-US": "vote", ko: "투표" })
   .setDescription("vote")
@@ -147,90 +150,29 @@ module.exports.data = new SlashCommandBuilder()
         ko: "투표를 종료합니다.",
       })
   );
-
-module.exports.execute = execute;
-
-const Discord = require("discord.js");
-const fs = require("fs");
-
-var sel = [];
-function addsel(value) {
-  sel.push(value);
-}
-
-var crypto = require("crypto");
-const path = require("path");
-
-function getSeed() {
-  let cryptoData = Math.random();
-  var hash = crypto.createHash("md5").update(`${cryptoData}`).digest("hex");
-  return hash;
-}
-
-function getVoteOption() {
-  var voteArray = [];
-  for (let i = 0; i < sel.length; i++) {
-    voteArray.push({
-      label: sel[i],
-      value: "vote" + i,
-    });
-  }
-  voteArray.push({
-    label: "투표 취소",
-    description: "투표를 취소합니다",
-    value: "cancelvote",
-  });
-  return voteArray;
-}
-
+/**
+ *
+ * @param {Discord.CommandInteraction} interaction
+ * @returns
+ */
 async function execute(interaction) {
   const lang = util.setLang(interaction.locale);
-  sel = [];
-  let voteList = quick.readFile(path.resolve("./data/vote.json"));
-  let votetime = quick.readFile(path.resolve("./data/votetime.json"));
-  let canvote = "";
-  let votecooltime = 0;
 
   if (interaction.options.getSubcommand() === "start") {
-    if (!interaction.member.roles.cache.some((role) => role.name === "MOD")) {
-      for (let vote of votetime) {
-        if (vote.user == interaction.member.user.id)
-          if (Date.now() - vote.time < 30 * 60 * 1000) {
-            canvote = "nocooltime";
-            votecooltime = Date.now() - vote.time;
-            break;
-          }
-      }
-      let votedtime = 0;
-      for (let voted of votetime) {
-        if (voted.user == interaction.member.user.id) votedtime++;
-      }
-      if (votedtime > 2)
-        return await interaction.reply({
-          ephemeral: true,
-          content: lang.vote.alert.max.replaceAll("${votedtime}", votedtime),
-        });
-      await votetime.push({
-        user: interaction.member.user.id,
-        time: Date.now(),
-      });
-      if (canvote == "nocooltime")
-        return await interaction.reply({
-          ephemeral: true,
-          content: lang.vote.alert.cooltime.replaceAll(
-            "${time}",
-            Math.floor(votecooltime / 1000 / 60)
-          ),
-        });
-      fs.writeFileSync("./data/votetime.json", JSON.stringify(votetime));
-    }
     const topic = interaction.options.getString("topic");
     const description = interaction.options.getString("description");
-    const overs = interaction.options.getBoolean("overlap");
-    let over = "";
-    if (overs) over = true;
-    if (!overs) over = false;
+    let over = interaction.options.getBoolean("overlap");
+
+    if (!over) over = false;
+
+    let votetime = util.readFile(require.resolve("../data/votetime.json"));
+    let canvote = "";
+    let votecooltime = 0;
+
+    await checkCooltime(votetime, canvote, votecooltime, interaction);
+
     let term = interaction.options.getInteger("term");
+    const defaultTerm = 12;
     if (term) {
       if (!interaction.member.roles.cache.some((role) => role.name === "MOD")) {
         if (term <= 0)
@@ -255,142 +197,69 @@ async function execute(interaction) {
             content: lang.vote.alert.wrongterm,
           });
       }
-    } else term = 12;
-    const s1 = interaction.options.getString("option1");
-    const s2 = interaction.options.getString("option2");
-    const s3 = interaction.options.getString("option3");
-    const s4 = interaction.options.getString("option4");
-    const s5 = interaction.options.getString("option5");
-    const s6 = interaction.options.getString("option6");
-    const s7 = interaction.options.getString("option7");
-    const s8 = interaction.options.getString("option8");
-    const s9 = interaction.options.getString("option9");
-    const s10 = interaction.options.getString("option10");
-    addsel(s1);
-    addsel(s2);
-    if (s3) addsel(s3);
-    if (s4) addsel(s4);
-    if (s5) addsel(s5);
-    if (s6) addsel(s6);
-    if (s7) addsel(s7);
-    if (s8) addsel(s8);
-    if (s9) addsel(s9);
-    if (s10) addsel(s10);
+    } else term = defaultTerm;
 
-    sel = Array.from(new Set(sel));
+    let options = getOptions(interaction);
 
-    var selmsg = "";
-    for (let i = 0; i < sel.length; i++) {
-      if (sel.length - 1 == i) {
-        selmsg = selmsg + `${i + 1}. ${sel[i]}`;
-        var voteEmbed = new Discord.EmbedBuilder()
-          .setTitle(lang.vote.embed.title.replaceAll("${topic}", topic))
-          .setDescription(description + "\n```md\n" + selmsg + "```")
-          .setFooter({
-            text: lang.vote.embed.description
-              .replaceAll("${over}", over)
-              .replaceAll("${term}", term),
-          });
-      } else selmsg = selmsg + `${i + 1}. ${sel[i]}\n`;
-    }
+    let max;
+    if (over) max = options.length;
+    else max = 1;
 
     let seed = getSeed();
 
-    var max = 1;
-    if (over) max = sel.length;
-    else max = 1;
-
-    const votemenu = new Discord.ActionRowBuilder().addComponents(
-      new Discord.SelectMenuBuilder()
-        .setCustomId(seed.toString())
-        .setPlaceholder(lang.vote.menu.placeholder)
-        .addOptions(getVoteOption())
-        .setMaxValues(max)
-        .setMinValues(0)
-    );
-    const votestopmenu = new Discord.ActionRowBuilder().addComponents(
-      new Discord.SelectMenuBuilder()
-        .setCustomId(seed.toString())
-        .setPlaceholder(lang.vote.menu.placeholder)
-        .addOptions(getVoteOption())
-        .setMaxValues(max)
-        .setMinValues(0)
-        .setDisabled(true)
-    );
-
-    interaction
-      .reply({
-        embeds: [voteEmbed],
-        components: [votemenu],
-        ephemeral: false,
-        fetchReply: true,
-      })
-      .then(async (message) => {
-        message.pin();
-        await voteList.push({
-          user: interaction.member.user.id,
-          username: interaction.member.user.username,
-          seed: seed.toString(),
-          message: message.id,
-          options: getVoteOption(),
-          topic: topic,
-          channel: interaction.channel.id,
-          menu: votestopmenu,
-        });
-
-        fs.writeFileSync("./data/vote.json", JSON.stringify(voteList));
-
-        let voted = quick.readFile("./data/voteResult.json");
-        let votelist = [];
-        for (let i = 0; i < sel.length; i++) {
-          votelist.push({ name: sel[i], value: 0 });
-        }
-
-        voted.push({ seed: seed.toString(), voted: votelist });
-
-        fs.writeFileSync("./data/voteResult.json", JSON.stringify(voted));
-        if (term != 0) {
-          let { stopvote } = require("../module/interaction.js");
-          let nowDate = new Date();
-          nowDate.setTime(nowDate.getHours() + term);
-          util.schedule(
-            nowDate,
-            await stopvote(message.channel, seed),
-            seed,
-            interaction.member.user.id
-          );
-        }
-      });
-
-    // 종료
+    let VoteObject = new Vote({
+      topic: topic,
+      description: description,
+      overlap: over,
+      term: term,
+      interaction: interaction,
+      seed: seed,
+      max: max,
+      username: interaction.member.nickname || interaction.member.user.tag,
+      lang: lang,
+      options: options,
+    });
+    VoteObject.sendVote();
+    //
   } else if (interaction.options.getSubcommand() === "stop") {
-    let vote = quick.readFile("./data/vote.json");
+    if (!fs.existsSync(require.resolve("../data/vote.json")))
+      fs.writeFileSync(
+        require.resolve("../data/vote.json"),
+        JSON.stringify({})
+      );
+    const dataRead = fs.readFileSync(
+      require.resolve("../data/vote.json"),
+      "utf8"
+    );
+    const voteData = JSON.parse(dataRead);
+
+    var list = Object.values(voteData);
+
+    if (!list[0]) {
+      return interaction.reply({
+        ephemeral: true,
+        content: lang.vote.alert.nostop,
+      });
+    }
 
     if (!interaction.member.roles.cache.some((role) => role.name === "MOD")) {
-      var list = [];
-      for (let i = 0; i < vote.length; i++) {
-        if (vote[i].user == interaction.member.user.id) {
-          list.push(i);
-        }
-      }
-
-      async function getVote() {
+      function getVote() {
         let topics = [];
         for (let i = 0; i < list.length; i++) {
           topics.push({
-            label: vote[list[i]].topic,
+            label: voteData[list[i]].topic,
             description: lang.vote.menu.description.replaceAll(
               "${label}",
-              vote[list[i]].options[0].label
+              voteData[list[i]].options[0].label
             ),
-            value: vote[list[i]].seed,
+            value: voteData[list[i]].seed,
           });
         }
         if (topics.length < 1) return false;
         return topics;
       }
 
-      if ((await getVote()) == false)
+      if (getVote() == false)
         return interaction.reply({
           ephemeral: true,
           content: lang.vote.alert.nostop,
@@ -398,13 +267,13 @@ async function execute(interaction) {
 
       const stopembed = new Discord.EmbedBuilder()
         .setDescription(lang.vote.embed.stop.description)
-        .setColor("Blue");
+        .setColor("#2F3136");
 
       const stopmenu = new Discord.ActionRowBuilder().addComponents(
         new Discord.SelectMenuBuilder()
           .setCustomId("stopvote")
           .setPlaceholder(lang.vote.menu.stopPlaceholder)
-          .addOptions(await getVote())
+          .addOptions(getVote())
           .setMaxValues(1)
       );
       await interaction.reply({
@@ -415,28 +284,22 @@ async function execute(interaction) {
     } else {
       async function getVoteModerator() {
         let topics = [];
-        for (let i = 0; i < vote.length; i++) {
+        for (let i = 0; i < list.length; i++) {
           topics.push({
-            label: vote[i].topic,
+            label: list[i].topic,
             description: lang.vote.menu.stopDescription
-              .replaceAll("${username}", vote[i].username)
-              .replaceAll("${label}", vote[i].options[0].label),
-            value: vote[i].seed,
+              .replaceAll("${username}", list[i].username)
+              .replaceAll("${label}", list[i].options.option1),
+            value: list[i].seed,
           });
         }
         if (topics.length < 1) return false;
         return topics;
       }
 
-      if ((await getVoteModerator()) == false)
-        return interaction.reply({
-          ephemeral: true,
-          content: lang.vote.alert.nostop,
-        });
-
       const stopEmbedModerator = new Discord.EmbedBuilder()
         .setDescription(lang.vote.embed.stop.description)
-        .setColor("Blue");
+        .setColor("#2F3136");
 
       const stopMenuModerator = new Discord.ActionRowBuilder().addComponents(
         new Discord.SelectMenuBuilder()
@@ -454,91 +317,550 @@ async function execute(interaction) {
   }
 }
 
-module.exports.vote = async function (user, channel, voteuserid, voteusername) {
-  let voteList = quick.readFile("./data/vote.json");
+module.exports.excute = execute;
 
-  sel = [];
-  const topic = `${user.username}님의 멤버 신청`;
-  const description = `${user.username}님의 멤버 신청 찬반 투표입니다`;
-  let term = 12;
-  addsel("찬성");
-  addsel("반대");
+class Vote {
+  /**
+   * Create a new vote
+   * @param {{topic: string, description: string, overlap: boolean, term: number, interaction: Discord.Interaction, seed: string, max: number, username: string, lang: any, message?: Discord.Message|object, stopmenu?: Discord.ActionRow|object, client?: Discord.Client, options: {option1: string, option2: string, option3: string, option4: string, option5: string, option6: string, option7: string, option8: string, option9: string, option10: string }}} param0
+   */
+  constructor({
+    topic,
+    description,
+    overlap,
+    term,
+    interaction,
+    seed,
+    max,
+    username,
+    lang,
+    options,
+    message,
+    stopmenu,
+    client,
+  }) {
+    this.topic = topic;
+    this.description = description;
+    this.overlap = overlap;
+    this.term = term;
+    this.interaction = interaction;
+    this.seed = seed;
+    this.max = max;
+    this.username = username;
+    if (typeof lang === "string") this.lang = util.setLang(lang);
+    else this.lang = lang;
+    Object.keys(options).forEach((key) =>
+      options[key] === undefined ? delete options[key] : {}
+    );
+    this.options = options;
+    if (message) this.message = message;
+    if (stopmenu) this.stopmenu = stopmenu;
+    if (client) this.client = client;
 
-  sel = Array.from(new Set(sel));
+    let stopDate = new Date();
+    stopDate.setHours(stopDate.getHours() + term);
 
-  var selmsg = "";
-  for (let i = 0; i < sel.length; i++) {
-    if (sel.length - 1 == i) {
-      selmsg = selmsg + `${i + 1}. ${sel[i]}`;
-      var voteEmbed = new Discord.EmbedBuilder()
-        .setTitle(`투표 | ${topic}`)
-        .setDescription(description + "\n```md\n" + selmsg + "```")
-        .setFooter({
-          text: `중복 투표: false` + " • " + `기간: ${term}시간`,
-        });
-    } else selmsg = selmsg + `${i + 1}. ${sel[i]}\n`;
+    const dateToCron = (date) => {
+      const minutes = date.getMinutes();
+      const hours = date.getHours();
+      const days = date.getDate();
+      const months = date.getMonth() + 1;
+      const dayOfWeek = date.getDay();
+
+      return `${minutes} ${hours} ${days} ${months} ${dayOfWeek}`;
+    };
+
+    cron.schedule(dateToCron(stopDate), () => this.stopVote());
   }
 
-  let seed = getSeed();
-  let max = 1;
+  toJSON() {
+    let json = {
+      topic: this.topic,
+      description: this.description,
+      overlap: this.overlap,
+      term: this.term,
+      interaction: this.interaction.toJSON(),
+      seed: this.seed,
+      max: this.max,
+      username: this.username,
+      lang: this.lang.language,
+      options: this.options,
+    };
+    json.interaction.appPermissions = `${json.interaction.appPermissions}`;
+    json.interaction.memberPermissions = `${json.interaction.memberPermissions}`;
+    if (this.message) json["message"] = this.message.toJSON();
+    if (this.stopmenu) json["stopmenu"] = this.stopmenu.toJSON();
+    return json;
+  }
 
-  const votemenu = new Discord.ActionRowBuilder().addComponents(
-    new Discord.SelectMenuBuilder()
-      .setCustomId(seed.toString())
-      .setPlaceholder("투표할 항목을 선택하세요!")
-      .addOptions(getVoteOption())
-      .setMaxValues(max)
-      .setMinValues(0)
-  );
-  const votestopmenu = new Discord.ActionRowBuilder().addComponents(
-    new Discord.SelectMenuBuilder()
-      .setCustomId(seed.toString())
-      .setPlaceholder("투표할 항목을 선택하세요!")
-      .addOptions(getVoteOption())
-      .setMaxValues(max)
-      .setMinValues(0)
-      .setDisabled(true)
-  );
+  /**
+   *
+   * @param {string} seed
+   * @param {Discord.Snowflake} userid
+   * @param {string | Array} select
+   * @returns
+   */
+  async vote(userid, select) {
+    if (!fs.existsSync(require.resolve("../data/vote.json")))
+      fs.writeFileSync(
+        require.resolve("../data/vote.json"),
+        JSON.stringify({})
+      );
+    const dataRead = fs.readFileSync(
+      require.resolve("../data/vote.json"),
+      "utf8"
+    );
+    const voteData = JSON.parse(dataRead);
+    let votedCheck = voteData[this.seed]["voted"];
+    if (!votedCheck) voteData[this.seed]["voted"] = [];
 
-  channel
-    .send({
-      embeds: [voteEmbed],
-      components: [votemenu],
-    })
-    .then(async (message) => {
-      message.pin();
-      await voteList.push({
-        user: voteuserid,
-        username: voteusername,
-        seed: seed.toString(),
-        message: message.id,
-        options: getVoteOption(),
-        topic: topic,
-        channel: channel.id,
-        menu: votestopmenu,
-      });
+    let voted = voteData[this.seed]["voted"];
 
-      fs.writeFileSync("./data/vote.json", JSON.stringify(voteList));
+    if (voted.find((item) => item.userid === userid)) {
+      await this.cancelVote(userid, true).then(async (data) => {
+        await data[this.seed]["voted"].push({
+          userid: userid,
+          select: select,
+        });
 
-      let voted = quick.readFile("./data/voteResult.json");
-      let votelist = [];
-      for (let i = 0; i < sel.length; i++) {
-        votelist.push({ name: sel[i], value: 0 });
-      }
-
-      voted.push({ seed: seed.toString(), voted: votelist });
-
-      fs.writeFileSync("./data/voteResult.json", JSON.stringify(voted));
-      if (term != 0) {
-        let { stopvote } = require("../module/interaction.js");
-        let nowDate = new Date();
-        nowDate.setTile(nowDate.getHours() + term);
-        util.schedule(
-          nowDate,
-          await stopvote(),
-          seed,
-          interaction.member.user.id
+        fs.writeFileSync(
+          require.resolve("../data/vote.json"),
+          JSON.stringify(data)
         );
-      }
+
+        await this.refreshVote();
+      });
+      return false;
+    }
+
+    await voteData[this.seed]["voted"].push({
+      userid: userid,
+      select: select,
     });
+
+    fs.writeFileSync(
+      require.resolve("../data/vote.json"),
+      JSON.stringify(voteData)
+    );
+
+    await this.refreshVote();
+
+    return voteData[this.seed]["voted"];
+  }
+
+  /**
+   *
+   * @param {string} seed
+   * @param {Discord.Snowflake} userid
+   * @returns
+   */
+  async cancelVote(userid, falseRefresh) {
+    if (!fs.existsSync(require.resolve("../data/vote.json")))
+      fs.writeFileSync(
+        require.resolve("../data/vote.json"),
+        JSON.stringify({})
+      );
+    const dataRead = fs.readFileSync(
+      require.resolve("../data/vote.json"),
+      "utf8"
+    );
+    const voteData = JSON.parse(dataRead);
+    let votedCheck = voteData[this.seed].voted;
+    if (!votedCheck) return false;
+
+    let voteResult = voteData[this.seed].voted.findIndex(
+      (item) => item.userid === userid
+    );
+    if (voteResult < 0) return false;
+
+    await voteData[this.seed].voted.splice(voteResult, 1);
+
+    fs.writeFileSync(
+      require.resolve("../data/vote.json"),
+      JSON.stringify(voteData)
+    );
+
+    if (!falseRefresh) await this.refreshVote();
+
+    return voteData;
+  }
+
+  async refreshVote() {
+    if (!this.message) return;
+    let channel;
+    let message;
+
+    if (this.client) {
+      channel =
+        this.client.channels.cache.get(this.interaction.channelId) ||
+        this.interaction.channel;
+      message = (await channel.messages.fetch(this.message.id)) || this.message;
+    } else {
+      channel = this.interaction.channel;
+      message = this.message;
+    }
+    if (!fs.existsSync(require.resolve("../data/vote.json")))
+      fs.writeFileSync(
+        require.resolve("../data/vote.json"),
+        JSON.stringify({})
+      );
+    const dataRead = fs.readFileSync(
+      require.resolve("../data/vote.json"),
+      "utf8"
+    );
+    const voteData = JSON.parse(dataRead);
+
+    if (!voteData[this.seed]["voted"]) return false;
+
+    let votedData = getVotedData(voteData[this.seed]["voted"]);
+    let msgData = getVotedMsg(votedData, this);
+
+    if (!msgData) {
+      await message.edit("");
+    } else {
+      await message.edit(
+        `${this.lang.interaction.menu.vote.alert.count} \n\`${msgData}\``
+      );
+    }
+    fs.writeFileSync(
+      require.resolve("../data/vote.json"),
+      JSON.stringify(voteData)
+    );
+
+    return true;
+  }
+
+  /**
+   * 투표를 보냅니다
+   */
+  sendVote() {
+    if (this.interaction.isRepliable() === undefined)
+      throw new Error("Invaild Interaction");
+    const votemenu = new Discord.ActionRowBuilder().addComponents(
+      new Discord.SelectMenuBuilder()
+        .setCustomId(this.seed)
+        .setPlaceholder(this.lang.vote.menu.placeholder)
+        .addOptions(getVoteOption(this.options, this.lang))
+        .setMaxValues(this.max)
+        .setMinValues(0)
+    );
+    const votestopmenu = new Discord.ActionRowBuilder().addComponents(
+      new Discord.SelectMenuBuilder()
+        .setCustomId(this.seed)
+        .setPlaceholder(this.lang.vote.menu.placeholder)
+        .addOptions(getVoteOption(this.options, this.lang))
+        .setMaxValues(this.max)
+        .setMinValues(0)
+        .setDisabled(true)
+    );
+
+    if (!fs.existsSync(require.resolve("../data/vote.json")))
+      fs.writeFileSync(
+        require.resolve("../data/vote.json"),
+        JSON.stringify({})
+      );
+    const dataRead = fs.readFileSync(
+      require.resolve("../data/vote.json"),
+      "utf8"
+    );
+    const voteData = JSON.parse(dataRead);
+
+    let Message = getMessage(this);
+    let voteEmbed = Message.voteEmbed;
+
+    this.interaction
+      .reply({
+        embeds: [voteEmbed],
+        components: [votemenu],
+        fetchReply: true,
+      })
+      .then((message) => {
+        message.pin();
+        this.message = message;
+        this.stopmenu = votestopmenu;
+        voteData[this.seed] = this.toJSON();
+
+        fs.writeFileSync(
+          require.resolve("../data/vote.json"),
+          JSON.stringify(voteData)
+        );
+      });
+    //TODO: 시간 지나면 투표 종료
+  }
+
+  /**
+   * 투표를 종료합니다
+   * @returns
+   */
+  async stopVote() {
+    if (!this.message) return;
+    let channel;
+    let message;
+
+    if (this.client) {
+      channel =
+        this.client.channels.cache.get(this.interaction.channelId) ||
+        this.interaction.channel;
+      message = (await channel.messages.fetch(this.message.id)) || this.message;
+    } else {
+      channel = this.interaction.channel;
+      message = this.message;
+    }
+
+    if (!fs.existsSync(require.resolve("../data/vote.json")))
+      fs.writeFileSync(
+        require.resolve("../data/vote.json"),
+        JSON.stringify({})
+      );
+    const dataRead = fs.readFileSync(
+      require.resolve("../data/vote.json"),
+      "utf8"
+    );
+    const voteData = JSON.parse(dataRead);
+
+    if (!voteData[this.seed]["voted"])
+      voteData[this.seed]["voted"] = [{ select: "None" }];
+    let votedData = getVotedData(voteData[this.seed]["voted"]);
+    let msgData = getVotedMsg(votedData, this, true);
+
+    const editEmbed = new Discord.EmbedBuilder()
+      .setTitle(
+        this.lang.interaction.menu.vote.embed.votefin + " | " + this.topic
+      )
+      .setColor("Green")
+      .setDescription(`\`\`\`js\n${msgData}\n\`\`\``);
+
+    await message.edit({
+      content: this.lang.interaction.menu.vote.embed.votefinished,
+      embeds: [editEmbed],
+      components: [this.stopmenu],
+    });
+
+    const newEditEmbed = new Discord.EmbedBuilder()
+      .setTitle(
+        this.lang.interaction.menu.vote.embed.votefin + " | " + this.topic
+      )
+      .setColor("#2F3136")
+      .setDescription(
+        this.lang.interaction.menu.vote.embed.votefinResult.replaceAll(
+          "${msg.url}",
+          message.url
+        )
+      );
+    await channel.send({
+      embeds: [newEditEmbed],
+      content: this.lang.interaction.menu.vote.embed.votefinished,
+    });
+
+    delete voteData[this.seed];
+
+    fs.writeFileSync(
+      require.resolve("../data/vote.json"),
+      JSON.stringify(voteData)
+    );
+  }
+}
+
+module.exports.vote = Vote;
+
+function getSeed() {
+  let cryptoData = Math.random();
+  let hash = crypto.createHash("md5").update(`${cryptoData}`).digest("hex");
+  return hash;
+}
+
+async function checkCooltime(votetime, canvote, votecooltime, interaction) {
+  if (!interaction.member.roles.cache.some((role) => role.name === "MOD")) {
+    for (let vote of votetime) {
+      if (vote.user == interaction.member.user.id)
+        if (Date.now() - vote.time < 30 * 60 * 1000) {
+          canvote = "nocooltime";
+          votecooltime = Date.now() - vote.time;
+          break;
+        }
+    }
+    let votedtime = 0;
+    for (let voted of votetime) {
+      if (voted.user == interaction.member.user.id) votedtime++;
+    }
+    if (votedtime > 2)
+      return await interaction.reply({
+        ephemeral: true,
+        content: lang.vote.alert.max.replaceAll("${votedtime}", votedtime),
+      });
+    await votetime.push({
+      user: interaction.member.user.id,
+      time: Date.now(),
+    });
+    if (canvote == "nocooltime")
+      return await interaction.reply({
+        ephemeral: true,
+        content: lang.vote.alert.cooltime.replaceAll(
+          "${time}",
+          Math.floor(votecooltime / 1000 / 60)
+        ),
+      });
+    fs.writeFileSync("./data/votetime.json", JSON.stringify(votetime));
+  }
+}
+
+/**
+ *
+ * @param {Discord.Interaction} interaction
+ * @returns
+ */
+function getOptions(interaction) {
+  let optionObject = {};
+  let sel = [];
+  const s1 = interaction.options.getString("option1");
+  const s2 = interaction.options.getString("option2");
+  const s3 = interaction.options.getString("option3");
+  const s4 = interaction.options.getString("option4");
+  const s5 = interaction.options.getString("option5");
+  const s6 = interaction.options.getString("option6");
+  const s7 = interaction.options.getString("option7");
+  const s8 = interaction.options.getString("option8");
+  const s9 = interaction.options.getString("option9");
+  const s10 = interaction.options.getString("option10");
+  sel.push(s1);
+  sel.push(s2);
+  if (s3) sel.push(s3);
+  if (s4) sel.push(s4);
+  if (s5) sel.push(s5);
+  if (s6) sel.push(s6);
+  if (s7) sel.push(s7);
+  if (s8) sel.push(s8);
+  if (s9) sel.push(s9);
+  if (s10) sel.push(s10);
+
+  sel = Array.from(new Set(sel)).filter((element) => {
+    return element !== undefined;
+  });
+
+  optionObject["option1"] = sel[0];
+  optionObject["option2"] = sel[1];
+  optionObject["option3"] = sel[2];
+  optionObject["option4"] = sel[3];
+  optionObject["option5"] = sel[4];
+  optionObject["option6"] = sel[5];
+  optionObject["option7"] = sel[6];
+  optionObject["option8"] = sel[7];
+  optionObject["option9"] = sel[8];
+  optionObject["option10"] = sel[9];
+
+  return optionObject;
+}
+
+function getMessage(voteClass) {
+  let selmsg = "";
+  let option = Object.values(voteClass.options);
+
+  for (let i = 0; i < option.length; i++) {
+    if (option.length - 1 == i) {
+      selmsg = selmsg + `${i + 1}. ${option[i]}`;
+      var voteEmbed = new Discord.EmbedBuilder()
+        .setTitle(
+          voteClass.lang.vote.embed.title.replaceAll(
+            "${topic}",
+            voteClass.topic
+          )
+        )
+        .setDescription(voteClass.description + "\n```md\n" + selmsg + "```")
+        .setFooter({
+          text: voteClass.lang.vote.embed.description
+            .replaceAll("${over}", voteClass.overlap)
+            .replaceAll("${term}", voteClass.term),
+        })
+        .setColor("#2F3136");
+    } else selmsg = selmsg + `${i + 1}. ${option[i]}\n`;
+  }
+  return { selmsg: selmsg, voteEmbed: voteEmbed };
+}
+
+function getVoteOption(options, lang) {
+  let option = Object.values(options);
+  var voteArray = [];
+  for (let i = 0; i < option.length; i++) {
+    voteArray.push({
+      label: option[i],
+      value: "vote" + i,
+    });
+  }
+  voteArray.push({
+    label: lang.vote.alert.cancelvotename,
+    description: lang.vote.alert.cancelvotevalue,
+    value: "cancelvote",
+  });
+  return voteArray;
+}
+
+function getVotedData(data) {
+  if (!data[0]) return false;
+  let selected = {};
+  if (Array.isArray(data[0].select)) {
+    for (let vote of data) {
+      for (let voted of vote.select) {
+        if (!selected[voted]) selected[voted] = 0;
+        selected[voted] += 1;
+      }
+    }
+  } else {
+    for (let vote of data) {
+      if (!selected[vote.select]) selected[vote.select] = 0;
+      selected[vote.select] += 1;
+    }
+  }
+  return selected;
+}
+
+function getVotedMsg(data, classData, stop) {
+  let msg = "";
+  if (data === false) return false;
+  let keys = Object.keys(data);
+  let values = Object.values(data);
+
+  if (stop) {
+    let stopOpt = Object.values(classData.options);
+    let obj = {};
+
+    if (stopOpt[0] && data["vote0"]) obj[stopOpt[0]] = data["vote0"];
+    else if (stopOpt[0]) obj[stopOpt[0]] = 0;
+    if (stopOpt[1] && data["vote1"]) obj[stopOpt[1]] = data["vote1"];
+    else if (stopOpt[1]) obj[stopOpt[1]] = 0;
+    if (stopOpt[2] && data["vote2"]) obj[stopOpt[2]] = data["vote2"];
+    else if (stopOpt[2]) obj[stopOpt[2]] = 0;
+    if (stopOpt[3] && data["vote3"]) obj[stopOpt[3]] = data["vote3"];
+    else if (stopOpt[3]) obj[stopOpt[3]] = 0;
+    if (stopOpt[4] && data["vote4"]) obj[stopOpt[4]] = data["vote4"];
+    else if (stopOpt[4]) obj[stopOpt[4]] = 0;
+    if (stopOpt[5] && data["vote5"]) obj[stopOpt[5]] = data["vote5"];
+    else if (stopOpt[5]) obj[stopOpt[5]] = 0;
+    if (stopOpt[6] && data["vote6"]) obj[stopOpt[6]] = data["vote6"];
+    else if (stopOpt[6]) obj[stopOpt[6]] = 0;
+    if (stopOpt[7] && data["vote7"]) obj[stopOpt[7]] = data["vote7"];
+    else if (stopOpt[7]) obj[stopOpt[7]] = 0;
+    if (stopOpt[8] && data["vote8"]) obj[stopOpt[8]] = data["vote8"];
+    else if (stopOpt[8]) obj[stopOpt[8]] = 0;
+    if (stopOpt[9] && data["vote9"]) obj[stopOpt[9]] = data["vote9"];
+    else if (stopOpt[9]) obj[stopOpt[9]] = 0;
+
+    for (let i = 0; i < Object.values(obj).length; i++) {
+      let key = Object.keys(obj)[i];
+      let value = Object.values(obj)[i];
+      msg = msg + `${key}: ${value}표\n`;
+    }
+    return msg;
+  }
+
+  for (let i = 0; i < keys.length; i++) {
+    keys[i] = Object.values(classData.options)[keys[i].split("vote")[1]];
+    msg = msg + `${keys[i]}: ${values[i]}표\n`;
+  }
+  return msg;
+}
+
+module.exports = {
+  data: data,
+  execute: execute,
+  vote: Vote,
 };

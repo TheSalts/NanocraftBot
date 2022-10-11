@@ -56,7 +56,7 @@ client.on("ready", () => {
       if (!channel) return console.log("[ERR] | Channel not found");
       let data = util.readFile("../data/youtube.json");
       let live = await checkStreaming(video.id);
-      switch (live.status) {
+      switch (live?.status) {
         case "liveEnd":
           data.forEach((item, index) => {
             if (item.status === "live" && item.videoId === live.videoId) {
@@ -246,6 +246,9 @@ async function checkStreaming(videoId) {
   let videoInfo = await axios.get(
     `https://www.googleapis.com/youtube/v3/videos?part=id,liveStreamingDetails,snippet&id=${videoId}&key=${config.youtubeKey}`
   );
+
+  if (!Array.isArray(videoInfo.items)) return;
+
   let videoStream = videoInfo.items[0]?.snippet?.liveBroadcastContent;
   let videoStreamDetail = videoInfo.items[0]?.liveStreamingDetails;
   switch (videoStream) {

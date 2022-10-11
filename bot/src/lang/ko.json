@@ -6,7 +6,7 @@
       "need": "작업을 수행하려면 ${permissionName} 권한이 필요합니다.",
       "needany": "작업을 수행하려면 해당 권한이 필요합니다."
     },
-    "error": "예기치 못한 오류가 발생했습니다.\n관리자에게 문의 바랍니다.\n${error.stack}"
+    "error": "예기치 못한 오류가 발생했습니다.\n관리자에게 문의 바랍니다."
   },
   "warn": {
     "alert": {
@@ -130,7 +130,9 @@
       "max": "투표는 한번에 2번까지만 할 수 있어요. 다른 투표를 종료해주세요.\n현재 투표 수: ${votedtime}",
       "cooltime": "아직 쿨타임이 지나지 않아 사용할 수 없어요.\n쿨타임: 30분\n지난 시간: ${time}분",
       "wrongterm": "잘못된 기간이에요.\n0~24 사이의 숫자를 입력해 주세요.",
-      "nostop": "종료할 수 있는 투표가 없어요."
+      "nostop": "종료할 수 있는 투표가 없어요.",
+      "cancelvotename": "투표 취소",
+      "cancelvotevalue": "투표를 취소합니다."
     },
     "embed": {
       "title": "투표 | ${topic}",
@@ -168,6 +170,9 @@
     }
   },
   "interaction": {
+    "error": {
+      "wrongInteraction": "잘못된 응답입니다!"
+    },
     "menu": {
       "vote": {
         "alert": {
