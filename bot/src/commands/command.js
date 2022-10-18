@@ -58,7 +58,7 @@ module.exports = {
 
     const command = interaction.options.getString("command");
     const util = require("minecraft-server-util");
-    const serverIp = "182.231.209.148";
+    const serverIp = config.rconip;
     const serverOpt = interaction.options.getString("server");
 
     if (command.length == 1)
@@ -80,7 +80,7 @@ module.exports = {
       case "크리에이티브":
         await rcon(8865);
       case "퍼블릭":
-        const publicPW = "nanocraft11!!public";
+        const publicPW = config.publicpw;
         await ssh(1103, publicPW, "public");
         break;
     }

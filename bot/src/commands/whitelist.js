@@ -140,7 +140,7 @@ module.exports = {
 
     if (team) infoEmbed.addFields({ name: "Team", value: team });
 
-    var server = "182.231.209.148";
+    var server = config.rconip;
     var rconpassword = config.rconpw;
 
     fs.writeFileSync("./data/teamlist.json", JSON.stringify(list));
