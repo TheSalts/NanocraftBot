@@ -3,7 +3,6 @@ const util = require("../util/util");
 const Discord = require("discord.js");
 const fs = require("fs");
 const crypto = require("crypto");
-const cron = require("node-cron");
 
 const data = new SlashCommandBuilder()
   .setName("vote")
@@ -217,12 +216,14 @@ async function execute(interaction) {
       max: max,
       username: interaction.member.nickname || interaction.member.user.tag,
       lang: lang,
+      channelname: interaction.channel.name,
       options: options,
     });
     VoteObject.sendVote();
-    VoteObject.setCron();
+    VoteObject.setSchedule();
     //
   } else if (interaction.options.getSubcommand() === "stop") {
+    await interaction.deferReply({ ephemeral: true });
     if (!fs.existsSync(require.resolve("../data/vote.json")))
       fs.writeFileSync(
         require.resolve("../data/vote.json"),
@@ -237,7 +238,7 @@ async function execute(interaction) {
     var list = Object.values(voteData);
 
     if (!list[0]) {
-      return interaction.reply({
+      return interaction.editReply({
         ephemeral: true,
         content: lang.vote.alert.nostop,
       });
@@ -251,7 +252,7 @@ async function execute(interaction) {
             label: voteData[list[i]].topic,
             description: lang.vote.menu.description.replaceAll(
               "${label}",
-              voteData[list[i]].options[0].label
+              voteData[list[i]].options[0].label + ` | ${list[i].channelname}`
             ),
             value: voteData[list[i]].seed,
           });
@@ -261,7 +262,7 @@ async function execute(interaction) {
       }
 
       if (getVote() == false)
-        return interaction.reply({
+        return interaction.editReply({
           ephemeral: true,
           content: lang.vote.alert.nostop,
         });
@@ -277,7 +278,7 @@ async function execute(interaction) {
           .addOptions(getVote())
           .setMaxValues(1)
       );
-      await interaction.reply({
+      await interaction.editReply({
         embeds: [stopembed],
         components: [stopmenu],
         ephemeral: true,
@@ -290,7 +291,10 @@ async function execute(interaction) {
             label: list[i].topic,
             description: lang.vote.menu.stopDescription
               .replaceAll("${username}", list[i].username)
-              .replaceAll("${label}", list[i].options.option1),
+              .replaceAll(
+                "${label}",
+                list[i].options.option1 + ` | ${list[i].channelname}`
+              ),
             value: list[i].seed,
           });
         }
@@ -309,7 +313,7 @@ async function execute(interaction) {
           .addOptions(await getVoteModerator())
           .setMaxValues(1)
       );
-      await interaction.reply({
+      await interaction.editReply({
         embeds: [stopEmbedModerator],
         components: [stopMenuModerator],
         ephemeral: true,
@@ -323,7 +327,7 @@ module.exports.excute = execute;
 class Vote {
   /**
    * Create a new vote
-   * @param {{topic: string, description: string, overlap: boolean, term: number, interaction: Discord.Interaction, seed: string, max: number, username: string, lang: any, message?: Discord.Message|object, stopmenu?: Discord.ActionRow|object, client?: Discord.Client, options: {option1: string, option2: string, option3: string, option4: string, option5: string, option6: string, option7: string, option8: string, option9: string, option10: string }}} param0
+   * @param {{topic: string, description: string, overlap: boolean, term: number, interaction: Discord.Interaction, seed: string, max: number, username: string, lang: any, channelname: string, message?: Discord.Message|object, stopmenu?: Discord.ActionRow|object, client?: Discord.Client, options: {option1: string, option2: string, option3: string, option4: string, option5: string, option6: string, option7: string, option8: string, option9: string, option10: string }}} param0
    */
   constructor({
     topic,
@@ -335,10 +339,11 @@ class Vote {
     max,
     username,
     lang,
-    options,
+    channelname,
     message,
     stopmenu,
     client,
+    options,
   }) {
     this.topic = topic;
     this.description = description;
@@ -348,6 +353,7 @@ class Vote {
     this.seed = seed;
     this.max = max;
     this.username = username;
+    this.channelname = channelname;
     if (typeof lang === "string") this.lang = util.setLang(lang);
     else this.lang = lang;
     Object.keys(options).forEach((key) =>
@@ -370,6 +376,7 @@ class Vote {
       max: this.max,
       username: this.username,
       lang: this.lang.language,
+      channelname: this.channelname,
       options: this.options,
     };
     json.interaction.appPermissions = `${json.interaction.appPermissions}`;
@@ -379,21 +386,21 @@ class Vote {
     return json;
   }
 
-  setCron() {
+  setSchedule() {
     let stopDate = new Date();
-    stopDate.setHours(stopDate.getHours() + term);
+    stopDate.setHours(stopDate.getHours() + this.term);
 
-    const dateToCron = (date) => {
-      const minutes = date.getMinutes();
-      const hours = date.getHours();
-      const days = date.getDate();
-      const months = date.getMonth() + 1;
-      const dayOfWeek = date.getDay();
-
-      return `${minutes} ${hours} ${days} ${months} ${dayOfWeek}`;
-    };
-
-    cron.schedule(dateToCron(stopDate), () => this.stopVote());
+    let scheduleData = fs.readFileSync(
+      require.resolve("../data/schedule.json"),
+      "utf8"
+    );
+    let schedule = JSON.parse(scheduleData);
+    schedule.push({ date: stopDate, vote: this.toJSON() });
+    fs.writeFileSync(
+      require.resolve("../data/schedule.json"),
+      JSON.stringify(schedule)
+    );
+    return true;
   }
 
   /**
@@ -656,6 +663,25 @@ class Vote {
     });
 
     delete voteData[this.seed];
+
+    let dataFile = fs.readFileSync(
+      require.resolve("../data/schedule.json"),
+      "utf8"
+    );
+    /**
+     * @type {Array}
+     */
+    let schedule = JSON.parse(dataFile);
+    schedule.forEach((item, index) => {
+      if (item.vote.seed === this.seed) {
+        schedule.splice(index, 1);
+      }
+    });
+
+    fs.writeFileSync(
+      require.resolve("../data/schedule.json"),
+      JSON.stringify(schedule)
+    );
 
     fs.writeFileSync(
       require.resolve("../data/vote.json"),
