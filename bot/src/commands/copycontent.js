@@ -102,7 +102,7 @@ module.exports = {
         let fileArray = [];
         let values = value[1];
 
-        let embed = new Discord.EmbedBuilder().setColor("Blue");
+        let embed = new Discord.EmbedBuilder().setColor("#2F3136");
         embed.setAuthor({
           name: values.author.tag,
           iconURL: values.author.displayAvatarURL(),
