@@ -108,7 +108,10 @@ module.exports = {
           iconURL: values.author.displayAvatarURL(),
         });
         if (values.content) embed.setDescription(values.content);
-        else embed.setDescription("[content]");
+        else {
+          embed.setDescription("[content]");
+          embed.setColor("Default");
+        }
         if (values.attachments) {
           for (const attachment of values.attachments) {
             fileArray.push(attachment[1].url);
@@ -132,13 +135,25 @@ module.exports = {
     await thread.send({ embeds: [Embeds] }).then(() => {
       interaction.editReply(lang.scrap.alert.success);
     });
-    const vot = require("./vote.js");
-    vot.vote(
-      trial,
-      interaction.channel,
-      interaction.member.user.id,
-      interaction.member.user.username
-    );
+    const { vote, getSeed } = require("./vote.js");
+    let voteObject = new vote({
+      topic: "멤버 투표",
+      description: `${trial.username}님 찬반 투표입니다.`,
+      overlap: false,
+      term: 12,
+      interaction: interaction,
+      seed: getSeed(),
+      max: 1,
+      username: interaction.member.user.username,
+      lang: lang,
+      channelname: interaction.channel.name,
+      options: {
+        option1: "찬성",
+        option2: "반대",
+      },
+    });
+    voteObject.sendVote();
+    voteObject.setSchedule();
     await wait(43200 * 1000).then(() => thread.delete());
   },
 };

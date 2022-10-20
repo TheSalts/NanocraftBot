@@ -578,24 +578,43 @@ class Vote {
     let Message = getMessage(this);
     let voteEmbed = Message.voteEmbed;
 
-    this.interaction
-      .reply({
-        embeds: [voteEmbed],
-        components: [votemenu],
-        fetchReply: true,
-      })
-      .then((message) => {
-        message.pin();
-        this.message = message;
-        this.stopmenu = votestopmenu;
-        voteData[this.seed] = this.toJSON();
+    if (this.interaction.replied === true) {
+      this.interaction
+        .editReply({
+          embeds: [voteEmbed],
+          components: [votemenu],
+          fetchReply: true,
+        })
+        .then((message) => {
+          message.pin();
+          this.message = message;
+          this.stopmenu = votestopmenu;
+          voteData[this.seed] = this.toJSON();
 
-        fs.writeFileSync(
-          require.resolve("../data/vote.json"),
-          JSON.stringify(voteData)
-        );
-      });
-    //TODO: 시간 지나면 투표 종료
+          fs.writeFileSync(
+            require.resolve("../data/vote.json"),
+            JSON.stringify(voteData)
+          );
+        });
+    } else {
+      this.interaction
+        .reply({
+          embeds: [voteEmbed],
+          components: [votemenu],
+          fetchReply: true,
+        })
+        .then((message) => {
+          message.pin();
+          this.message = message;
+          this.stopmenu = votestopmenu;
+          voteData[this.seed] = this.toJSON();
+
+          fs.writeFileSync(
+            require.resolve("../data/vote.json"),
+            JSON.stringify(voteData)
+          );
+        });
+    }
   }
 
   /**
@@ -689,8 +708,6 @@ class Vote {
     );
   }
 }
-
-module.exports.vote = Vote;
 
 function getSeed() {
   let cryptoData = Math.random();
@@ -892,4 +909,5 @@ module.exports = {
   data: data,
   execute: execute,
   vote: Vote,
+  getSeed: getSeed,
 };

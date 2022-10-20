@@ -808,11 +808,11 @@ async function modal(interaction) {
       const memberAddEmbed = new Discord.EmbedBuilder()
         .setTitle("Nanocraft SMP 신청")
         .addFields(
-          { name: "제작한 건축물 / 장치", value: whatmadeRes },
+          { name: "제작한 건축물 / 장치", value: whatmadeRes || "None" },
           { name: "자기소개", value: whoismeRes },
           {
             name: "테크니컬에 입문한 계기",
-            value: howtechnicalRes,
+            value: howtechnicalRes || "None",
           },
           { name: "목표 의식", value: goalRes },
           { name: "마이크 사용 여부 및 나이", value: mikeageRes }
