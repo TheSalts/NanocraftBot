@@ -201,7 +201,7 @@ async function execute(interaction) {
     let options = getOptions(interaction);
 
     let max;
-    if (over) max = options.length;
+    if (over) max = Object.values(options).length;
     else max = 1;
 
     let seed = getSeed();
@@ -784,15 +784,15 @@ function getOptions(interaction) {
   });
 
   optionObject["option1"] = sel[0];
-  optionObject["option2"] = sel[1];
-  optionObject["option3"] = sel[2];
-  optionObject["option4"] = sel[3];
-  optionObject["option5"] = sel[4];
-  optionObject["option6"] = sel[5];
-  optionObject["option7"] = sel[6];
-  optionObject["option8"] = sel[7];
-  optionObject["option9"] = sel[8];
-  optionObject["option10"] = sel[9];
+  if (sel[1]) optionObject["option2"] = sel[1];
+  if (sel[2]) optionObject["option3"] = sel[2];
+  if (sel[3]) optionObject["option4"] = sel[3];
+  if (sel[4]) optionObject["option5"] = sel[4];
+  if (sel[5]) optionObject["option6"] = sel[5];
+  if (sel[6]) optionObject["option7"] = sel[6];
+  if (sel[7]) optionObject["option8"] = sel[7];
+  if (sel[8]) optionObject["option9"] = sel[8];
+  if (sel[9]) optionObject["option10"] = sel[9];
 
   return optionObject;
 }
