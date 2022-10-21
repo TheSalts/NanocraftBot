@@ -18,6 +18,7 @@ const client = new Client({
 });
 const quick = require("../util/quick");
 const util = require("../util/util");
+const axios = require("axios");
 
 client.once("ready", async () => {
   console.log("Captcha 실행 성공");
@@ -55,8 +56,13 @@ function deleteCaptcha(item) {
   return yesCaptcha;
 }
 
+var usermsg;
+
+var locale;
+
 client.on("interactionCreate", (interaction) => {
   const lang = util.setLang(interaction.locale);
+  locale = interaction.locale;
   if (!interaction.isButton()) return;
   if (interaction.customId === "whitelist") {
     if (
@@ -88,6 +94,26 @@ client.on("interactionCreate", (interaction) => {
         (role) => role.name === "TRUSTED MEMBER"
       ).id
     );
+  } else if (interaction.customId === "yeswhitelist") {
+    (async function () {
+      const secondEmbed = new Discord.EmbedBuilder()
+        .setDescription(
+          `닉네임이 \`${usermsg.content}\`으로 설정되었습니다.\nNickname was set to \`${usermsg.content}\``
+        )
+        .setColor("#2F3136");
+      await interaction.channel.send({ embeds: [secondEmbed] });
+      name(usermsg.content);
+      prompting(usermsg.author.id);
+      captcha.options.guildID = guildID;
+      await captcha.present(members);
+    })();
+  } else if (interaction.customId === "nowhitelist") {
+    (async function () {
+      const stopEmbed = new Discord.EmbedBuilder()
+        .setDescription(`인증이 취소되었습니다.\nAuthentication was canceled.`)
+        .setColor("Red");
+      await interaction.channel.send({ embeds: [stopEmbed] });
+    })();
   }
 });
 
@@ -141,6 +167,7 @@ function deletePrompt(item) {
 }
 
 client.on("messageCreate", async (message) => {
+  const lang = util.setLang(locale);
   if (message.author.bot) return;
   if (message.channel.type != Discord.ChannelType.DM) return;
   for (var i = 0; i < prompt.length; i++) {
@@ -151,16 +178,52 @@ client.on("messageCreate", async (message) => {
   }
 
   async function next() {
-    const secondEmbed = new Discord.EmbedBuilder()
-      .setDescription(
-        `닉네임이 \`${message.content}\`으로 설정되었습니다.\nNickname was set to \`${message.content}\``
-      )
-      .setColor("#B266FF");
-    await message.author.send({ embeds: [secondEmbed] });
-    name(message.content);
-    prompting(message.author.id);
-    captcha.options.guildID = guildID;
-    await captcha.present(members);
+    let checkuser = await axios.get(
+      "https://api.mojang.com/users/profiles/minecraft/" + message.content
+    );
+    if (checkuser.status === 400) {
+      let invalidUserEmbed = new Discord.EmbedBuilder()
+        .setTitle("Error: " + checkuser.data.error)
+        .setDescription(`${checkuser.data.errorMessage}`)
+        .setColor("Red");
+      await message.author.send({ embeds: [invalidUserEmbed] });
+      deleteCaptcha(message.author.id);
+      return;
+    }
+    if (checkuser.status === 204) {
+      let invalidUserEmbed = new Discord.EmbedBuilder()
+        .setTitle("Error: " + lang.captcha.check.error)
+        .setDescription(lang.captcha.check.errormsg)
+        .setColor("Red");
+      await message.author.send({ embeds: [invalidUserEmbed] });
+      deleteCaptcha(message.author.id);
+      return;
+    }
+    const userEmbed = new Discord.EmbedBuilder()
+      .setDescription(lang.captcha.check.q)
+      .setImage(`https://mc-heads.net/body/${message.content}/right`)
+      .setColor("#2F3136")
+      .addFields(
+        {
+          name: lang.captcha.check.username,
+          value: checkuser.data.name || "Error",
+          inline: true,
+        },
+        { name: "UUID", value: checkuser.data.id || "Error", inline: true }
+      );
+    const btnrow = new Discord.ActionRowBuilder().addComponents(
+      new Discord.ButtonBuilder()
+        .setCustomId("yeswhitelist")
+        .setLabel(lang.captcha.check.y)
+        .setStyle(Discord.ButtonStyle.Success),
+      new Discord.ButtonBuilder()
+        .setCustomId("nowhitelist")
+        .setLabel(lang.captcha.check.n)
+        .setStyle(Discord.ButtonStyle.Danger)
+    );
+    usermsg = message;
+
+    await message.author.send({ embeds: [userEmbed], components: [btnrow] });
   }
 });
 
@@ -207,7 +270,7 @@ captcha.on("success", async (data) => {
 
   const util = require("minecraft-server-util");
   let option1 = nickname;
-  const ip = "182.231.209.148";
+  const ip = config.rconip;
 
   const Rclient = new util.RCON(ip, {
     port: 8865,

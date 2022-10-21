@@ -167,6 +167,14 @@
       "title": "Please enter your Minecraft nickname!",
       "error": "Error: Can't send DM",
       "dm": "You can certify it only if you check Privacy Settings > Allow direct messages from other members in this server."
+    },
+    "check": {
+      "q": "Are you sure about this user?",
+      "y": "Yes",
+      "n": "No",
+      "username": "Username",
+      "error": "User data not found",
+      "errormsg": "Please make sure you have entered your username correctly."
     }
   },
   "interaction": {

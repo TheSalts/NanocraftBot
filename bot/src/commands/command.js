@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require("@discordjs/builders");
 const { PermissionsBitField } = require("discord.js");
 const Discord = require("discord.js");
 const quick = require("../util/quick");
-const util = require("../util/util");
+const utils = require("../util/util");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -43,7 +43,7 @@ module.exports = {
    * @returns
    */
   async execute(interaction) {
-    const lang = util.setLang(interaction.locale);
+    const lang = utils.setLang(interaction.locale);
     if (interaction.member.roles.cache.some((role) => role.name === "MOD")) {
     } else if (
       interaction.member.roles.cache.some(
