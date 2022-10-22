@@ -1,6 +1,7 @@
 const { token } = require("../config.json");
 const Discord = require("discord.js");
 const config = require("../config.json");
+const fs = require("fs");
 
 const { Client, GatewayIntentBits, Partials } = require("discord.js");
 const client = new Client({
@@ -26,7 +27,8 @@ client.once("ready", () => {
 client.login(token);
 
 client.on("guildMemberAdd", (member) => {
-  let channel = client.channels.cache.get("987045538249728000");
+  let channel = client.channels.cache.get("987045538249728000"); // Welcome 채널
+  let maintopic = client.channels.cache.get("1004783888159227994"); // 메인토픽
   function randomWelcomeDescription(nickname) {
     let array = [
       "{name} 님이 서버에 뛰어들어 오셨어요.",
@@ -83,4 +85,18 @@ client.on("guildMemberAdd", (member) => {
     )
     .setThumbnail(member.displayAvatarURL());
   channel.send({ embeds: [Embed], content: `<@${member.user.id}>` });
+
+  let msgid = "";
+  let read = fs.readFileSync("../data/joinmsg.json", "utf8");
+  let joinmsg = JSON.parse(read);
+  maintopic
+    .send({
+      content: `<@${member.user.id}>\n\n나노크래프트 디스코드에 오신 것을 환영합니다.\n누구나 이용 가능한 야생 서버도 있으니 자유롭게 플레이 해보세요!\n자세한 내용은 <#1009483942799351868> 확인 바랍니다.\n\nWelcome to Nanocraft Discord.\nThere is also a public server that anyone can use, so feel free to play!\nFor more information, please check out <#1009483942799351868>`,
+    })
+    .then((message) => {
+      msgid = message.id;
+      maintopic.messages.fetch(joinmsg.id).then((msg) => msg.delete());
+      joinmsg = { id: msgid };
+      fs.writeFileSync("../data/joinmsg.json", JSON.stringify(joinmsg));
+    });
 });
