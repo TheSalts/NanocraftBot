@@ -27,6 +27,7 @@ client.once("ready", () => {
 client.login(token);
 
 client.on("guildMemberAdd", (member) => {
+  if (member.guild.id !== "987045537595420752") return;
   let channel = client.channels.cache.get("987045538249728000"); // Welcome 채널
   let maintopic = client.channels.cache.get("1004783888159227994"); // 메인토픽
   function randomWelcomeDescription(nickname) {
