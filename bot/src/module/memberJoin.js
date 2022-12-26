@@ -95,6 +95,7 @@ client.on("guildMemberAdd", (member) => {
       content: `<@${member.user.id}>\n\n나노크래프트 디스코드에 오신 것을 환영합니다.\n누구나 이용 가능한 야생 서버도 있으니 자유롭게 플레이 해보세요!\n자세한 내용은 <#1009483942799351868> 확인 바랍니다.\n\nWelcome to Nanocraft Discord.\nThere is also a public server that anyone can use, so feel free to play!\nFor more information, please check out <#1009483942799351868>`,
     })
     .then((message) => {
+      message.react("👋");
       msgid = message.id;
       maintopic.messages.fetch(joinmsg.id).then((msg) => msg.delete());
       joinmsg = { id: msgid };

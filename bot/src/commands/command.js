@@ -6,7 +6,6 @@ const utils = require("../util/util");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
     .setName("command")
     .setDescription("Use minecraft command to server.")
     .setDescriptionLocalizations({
@@ -75,10 +74,10 @@ module.exports = {
     });
     switch (serverOpt) {
       case "SMP":
-        await rcon(8863);
+        await rcon(25000);
         break;
       case "크리에이티브":
-        await rcon(8865);
+        await rcon(25001);
       case "퍼블릭":
         const publicPW = config.publicpw;
         await ssh(1103, publicPW, "public");

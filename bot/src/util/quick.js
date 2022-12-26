@@ -28,7 +28,6 @@ module.exports = {
    * @description Send Embed when user has no permission
    * @param {Discord.Interaction|Discord.Channel|Discord.User} place 임베드를 보낼 곳
    * @param {string} permissionName 권한 이름
-   * @returns {Discord.Message}
    */
   sendPermissionErrorEmbed: async function (place, permissionName) {
     if (place.locale) var lang = util.setLang(place.locale);
@@ -50,10 +49,11 @@ module.exports = {
         .setDescription(lang.quick.permission.needany);
     }
     if (place.channel) {
-      if (place.isRepliable())
-        return await place.reply({ embeds: [embed], ephemeral: true });
-      else return await place.followUp({ embeds: [embed], ephemeral: true });
-    } else return await place.send({ embeds: [embed] });
+      if (place.isRepliable()) {
+        await place.followUp({ embeds: [embed], ephemeral: true });
+      }
+      else await place.reply({ embeds: [embed], ephemeral: true });
+    } else await place.send({ embeds: [embed] });
   },
   /**
    * @deprecated
@@ -75,7 +75,6 @@ module.exports = {
    * @type async function
    * @param {Discord.Interaction|Discord.Channel|Discord.User} place 임베드를 보낼 곳
    * @param {Error} error
-   * @returns {Discord.Message}
    */
   sendErrorEmbed: async function (place, error) {
     if (place.locale) var lang = util.setLang(place.locale);
@@ -83,12 +82,14 @@ module.exports = {
       .setTitle("Error")
       .setColor("Red")
       .setDescription(lang.quick.error)
-      .addFields({ name: "error description", value: error });
+      .addFields({ name: "Error description", value: `${error.stack}` });
     if (place.channel) {
-      if (place.isRepliable())
-        return await place.reply({ embeds: [embed], ephemeral: true });
-      else return await place.followUp({ embeds: [embed], ephemeral: true });
-    } else return await place.send({ embeds: [embed] });
+      console.log(place.isRepliable())
+      if (place.isRepliable()) {
+        await place.followUp({ embeds: [embed], ephemeral: true });
+      }
+      else await place.reply({ embeds: [embed], ephemeral: true });
+    } else await place.send({ embeds: [embed] });
   },
   /**
    * @deprecated

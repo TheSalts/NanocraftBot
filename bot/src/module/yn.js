@@ -26,10 +26,9 @@ client.on("ready", () => {
     console.log("Checking...");
     config.youtubers.forEach(async (youtuber) => {
       console.log(
-        `[${
-          youtuber.url.length >= 10
-            ? youtuber.url.slice(0, 10) + "..."
-            : youtuber.url
+        `[${youtuber.url.length >= 10
+          ? youtuber.url.slice(0, 10) + "..."
+          : youtuber.url
         }] | Start checking...`
       );
       let channelInfos = await getYoutubeChannelInfos(youtuber.url);
@@ -157,8 +156,7 @@ async function getLastVideo(youtubeChannelName, rssURL) {
     return bPubDate - aPubDate;
   });
   console.log(
-    `[${youtubeChannelName}]  | The last video is "${
-      tLastVideos[0] ? tLastVideos[0].title : "err"
+    `[${youtubeChannelName}]  | The last video is "${tLastVideos[0] ? tLastVideos[0].title : "err"
     }"`
   );
   return tLastVideos[0];
@@ -210,8 +208,7 @@ function getYoutubeChannelIdFromURL(url) {
  */
 async function getYoutubeChannelInfos(name) {
   console.log(
-    `[${
-      name.length >= 10 ? name.slice(0, 10) + "..." : name
+    `[${name.length >= 10 ? name.slice(0, 10) + "..." : name
     }] | Resolving channel infos...`
   );
   let channel = null;
@@ -228,10 +225,8 @@ async function getYoutubeChannelInfos(name) {
     }
   }
   console.log(
-    `[${
-      name.length >= 10 ? name.slice(0, 10) + "..." : name
-    }] | Title of the resolved channel: ${
-      channel.raw ? channel.raw.snippet.title : "err"
+    `[${name.length >= 10 ? name.slice(0, 10) + "..." : name
+    }] | Title of the resolved channel: ${channel.raw ? channel.raw.snippet.title : "err"
     }`
   );
   return channel;

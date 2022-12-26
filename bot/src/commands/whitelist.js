@@ -72,7 +72,12 @@ module.exports = {
           { name: "worldtour", value: "worldtour" }
         )
     ),
-  async execute(interaction) {
+  /**
+   *
+   * @param {Discord.CommandInteraction} interaction
+   * @param {Discord.Channel} logchannel
+   */
+  async execute(interaction, logchannel) {
     const lang = Util.setLang(interaction.locale);
     await interaction.deferReply({ ephemeral: true });
     const Discord = require("discord.js");
@@ -83,7 +88,7 @@ module.exports = {
     const addOrdelete = interaction.options.getString("method");
     const address = interaction.options.getString("server");
 
-    const list = util.readFile(path.resolve("./data/teamlist.json"));
+    const list = Util.readFile(path.resolve("./data/teamlist.json"));
 
     const infoEmbed = new Discord.EmbedBuilder()
       .setColor("Green")
@@ -100,12 +105,17 @@ module.exports = {
           value: address,
           inline: true,
         }
-      );
+      )
+      .setFooter({
+        text:
+          interaction.member.nickname ||
+          interaction.user.username + ` | ${interaction.user.tag}`,
+      });
 
     if (address == "크리에이티브 서버") {
-      var serverport = 8865;
+      var serverport = 25001;
     } else if (address == "SMP 서버") {
-      var serverport = 8863;
+      var serverport = 25000;
       let opt = interaction.options.getString("teamtag");
       if (opt == "Nanocraft") var team = "nanocraft";
       if (opt == "Partner") var team = "partner";
@@ -156,19 +166,34 @@ module.exports = {
         await client.login(rconpassword);
         await client.execute(command);
         if (teamcmd) await client.execute(teamcmd);
+        await logchannel.send({
+          content: lang.whitelist.success,
+          embeds: [infoEmbed],
+        });
+        delete infoEmbed.data.footer;
         await interaction.editReply({
           content: lang.whitelist.success,
           embeds: [infoEmbed],
         });
       })
-      .catch((error) => {
+      .catch(async (error) => {
         const Err = new Discord.EmbedBuilder()
           .setTitle("Error")
           .setDescription(
             lang.whitelist.error.replaceAll("${error.stack}", error.stack)
           )
-          .setColor("#FF0000");
-        interaction.editReply({
+          .setColor("#FF0000")
+          .setFooter({
+            text:
+              interaction.member.nickname ||
+              interaction.user.username + ` | ${interaction.user.tag}`,
+          })
+          .setTimestamp();
+        await logchannel.send({
+          embeds: [Err],
+        });
+        delete Err.data.footer;
+        await interaction.editReply({
           embeds: [Err],
           ephemeral: true,
         });

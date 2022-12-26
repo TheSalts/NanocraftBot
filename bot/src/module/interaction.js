@@ -700,9 +700,9 @@ async function button(interaction) {
  */
 async function autocomplete(interaction) {
   switch (interaction.commandName) {
-    case "리플레이":
+    case "replay":
       let list = [];
-      let projects = util.readFile("../data/projects.json");
+      let projects = util.readFile(require.resolve("../data/projects.json"));
       for (let project of projects) {
         list.push({
           name: project.name,

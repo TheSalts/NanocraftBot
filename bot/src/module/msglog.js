@@ -1,11 +1,7 @@
 const { token } = require("../config.json");
 const Discord = require("discord.js");
-const config = require("../config.json");
 const { Client, GatewayIntentBits, Partials } = require("discord.js");
-const fs = require("fs");
-const quick = require("../util/quick");
 const util = require("../util/util");
-const { channel } = require("diagnostics_channel");
 const path = require("path");
 const wait = require("node:timers/promises").setTimeout;
 const client = new Client({
@@ -16,6 +12,7 @@ const client = new Client({
   ],
   partials: [Partials.Channel],
 });
+const Channelname = "📃│message-log";
 
 client.once("ready", () => {
   console.log("Message Ready!");
@@ -63,7 +60,7 @@ client.on("messageCreate", async (message) => {
   if (message.guild !== client.guilds.cache.get("987045537595420752")) return;
   if (message.author.bot) return;
   let logchannel = message.guild.channels.cache.find(
-    (channel) => channel.name === "📃│메시지-로그"
+    (channel) => channel.name === Channelname
   );
 
   function urlcheck(text) {
@@ -131,7 +128,7 @@ client.on("messageUpdate", async (old, message) => {
   if (message.author.bot) return;
 
   let logchannel = message.guild.channels.cache.find(
-    (channel) => channel.name === "📃│메시지-로그"
+    (channel) => channel.name === Channelname
   );
 
   const Embed = new Discord.EmbedBuilder()
@@ -179,7 +176,7 @@ client.on("messageDelete", async (message) => {
   if (message.guild !== client.guilds.cache.get("987045537595420752")) return;
   if (message.author.bot) return;
   let logchannel = message.guild.channels.cache.find(
-    (channel) => channel.name === "📃│메시지-로그"
+    (channel) => channel.name === Channelname
   );
 
   const Embed = new Discord.EmbedBuilder()

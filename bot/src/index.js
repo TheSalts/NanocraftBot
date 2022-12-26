@@ -58,9 +58,7 @@ client.once("ready", () => {
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
 
-  const logchannel = interaction.guild.channels.cache.find(
-    (channel) => channel.name === "🔒│captcha-log"
-  );
+  const logchannel = interaction.guild.channels.cache.get("987045538493001822");
   const alertchn = interaction.guild.channels.cache.find(
     (channel) => channel.name === "⛔│제재"
   );

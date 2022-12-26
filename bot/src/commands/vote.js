@@ -148,6 +148,24 @@ const data = new SlashCommandBuilder()
         "en-US": "Stop vote.",
         ko: "투표를 종료합니다.",
       })
+  )
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName("search")
+      .setNameLocalizations({ "en-US": "search", ko: "검색" })
+      .setDescription("Search vote")
+      .setDescriptionLocalizations({
+        "en-US": "Search vote",
+        ko: "투표를 검색합니다.",
+      })
+      .addStringOption((option) =>
+        option
+          .setName("seed")
+          .setNameLocalizations({ "en-US": "seed", ko: "시드" })
+          .setDescription("seed")
+          .setDescriptionLocalizations({ "en-US": "seed", ko: "시드" })
+          .setRequired(true)
+      )
   );
 /**
  *
@@ -156,6 +174,7 @@ const data = new SlashCommandBuilder()
  */
 async function execute(interaction) {
   const lang = util.setLang(interaction.locale);
+  const quick = require("../util/quick");
 
   if (interaction.options.getSubcommand() === "start") {
     const topic = interaction.options.getString("topic");
@@ -319,6 +338,69 @@ async function execute(interaction) {
         ephemeral: true,
       });
     }
+  } else if (interaction.options.getSubcommand() === "search") {
+    if (
+      !interaction.member.roles.cache.has("987045537645727766" /* MOD Only */)
+    )
+      return quick.sendPermissionErrorEmbed(interaction);
+
+    let seed = interaction.options.getString("seed");
+
+    let votejson = util.readFile(require.resolve("../data/vote.json"));
+    let votes = Object.keys(votejson);
+    let votefind = votes.find((e) => e.startsWith(seed.substring(0, 6)));
+    if (votefind) seed = votefind;
+
+    if (votejson[seed]) {
+      const Embed = new Discord.EmbedBuilder()
+        .setTitle(`${votejson[seed].topic} | ${seed.substring(0, 6)}`)
+        .addFields(
+          {
+            name: "작성자",
+            value: `<@${votejson[seed].interaction.user}>`,
+            inline: true,
+          },
+          {
+            name: votejson[seed].topic,
+            value: votejson[seed].message.embeds[0].description,
+          }
+        )
+        .setColor("#2F3136")
+        .setURL(
+          `https://discord.com/channels/${votejson[seed].message.guildId}/${votejson[seed].message.channelId}/${votejson[seed].message.id}`
+        )
+        .setFooter({ text: seed });
+      let voted = votejson[seed].voted;
+      if (voted) {
+        let options = Object.values(votejson[seed].options);
+        let message = "";
+        for (let i = 0; i < options.length; i++) {
+          let userMsg = "";
+          let users = voted.filter((item) =>
+            item.select.find((e) => e === `vote${i}`)
+          );
+          users.forEach((user) => {
+            userMsg = userMsg + `<@${user.userid}>\n`;
+          });
+          message = userMsg + `*${users.length}표*\n`;
+          if (message.length > 1024) {
+            message.length = 1020;
+            message = message + "...";
+          }
+          Embed.addFields({ name: options[i], value: message, inline: true });
+        }
+        Embed.addFields({
+          name: "총 투표 수",
+          value: votejson[seed].voted?.length + "표" || "없음",
+        });
+      }
+
+      await interaction.reply({ ephemeral: true, embeds: [Embed] });
+    } else
+      return await interaction.reply({
+        ephemeral: true,
+        content: "잘못된 시드입니다.",
+      });
   }
 }
 
@@ -624,6 +706,9 @@ class Vote {
   async stopVote() {
     if (!this.message) return;
     let channel;
+    /**
+     * @type {Discord.Message}
+     */
     let message;
 
     if (this.client) {
@@ -665,6 +750,8 @@ class Vote {
       components: [this.stopmenu],
     });
 
+    await message.unpin();
+
     const newEditEmbed = new Discord.EmbedBuilder()
       .setTitle(
         this.lang.interaction.menu.vote.embed.votefin + " | " + this.topic
@@ -683,6 +770,11 @@ class Vote {
 
     delete voteData[this.seed];
 
+    fs.writeFileSync(
+      require.resolve("../data/vote.json"),
+      JSON.stringify(voteData)
+    );
+
     let dataFile = fs.readFileSync(
       require.resolve("../data/schedule.json"),
       "utf8"
@@ -700,11 +792,6 @@ class Vote {
     fs.writeFileSync(
       require.resolve("../data/schedule.json"),
       JSON.stringify(schedule)
-    );
-
-    fs.writeFileSync(
-      require.resolve("../data/vote.json"),
-      JSON.stringify(voteData)
     );
   }
 }
@@ -749,7 +836,6 @@ async function checkCooltime(votetime, canvote, votecooltime, interaction) {
     fs.writeFileSync("./data/votetime.json", JSON.stringify(votetime));
   }
 }
-
 /**
  *
  * @param {Discord.Interaction} interaction
@@ -813,9 +899,12 @@ function getMessage(voteClass) {
         )
         .setDescription(voteClass.description + "\n```md\n" + selmsg + "```")
         .setFooter({
-          text: voteClass.lang.vote.embed.description
-            .replaceAll("${over}", voteClass.overlap)
-            .replaceAll("${term}", voteClass.term),
+          text:
+            voteClass.lang.vote.embed.description
+              .replaceAll("${over}", voteClass.overlap)
+              .replaceAll("${term}", voteClass.term) +
+            "      " +
+            voteClass.seed,
         })
         .setColor("#2F3136");
     } else selmsg = selmsg + `${i + 1}. ${option[i]}\n`;
