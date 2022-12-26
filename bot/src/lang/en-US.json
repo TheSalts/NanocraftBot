@@ -194,7 +194,8 @@
         "embed": {
           "votefin": "Vote end",
           "votefinResult": "Check [Vote result](${msg.url})!",
-          "votefinished": "Vote ended"
+          "votefinished": "Vote ended",
+          "result": "Vote Result"
         }
       },
       "search": {

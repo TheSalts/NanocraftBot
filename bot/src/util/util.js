@@ -1,25 +1,9 @@
-const schedule = require("node-cron");
 const fs = require("fs");
 const path = require("path");
 const Discord = require("discord.js");
 
 module.exports = {
-  /**
-   * @param {Date} date
-   * @param {Function} callback
-   * @param  {...any} args
-   */
-  schedule: async function (date, callback, ...args) {
-    function dateToCron(date) {
-      const minutes = date.getMinutes();
-      const hours = date.getHours();
-      const days = date.getDate();
-      const months = date.getMonth() + 1;
-      const dayOfWeek = date.getDay();
-      return `${minutes} ${hours} ${days} ${months} ${dayOfWeek}`;
-    }
-    schedule.schedule(dateToCron(date), await callback(args));
-  },
+
   /**
    * @description read file and if file does not exist, write file
    * @param path 파일 위치

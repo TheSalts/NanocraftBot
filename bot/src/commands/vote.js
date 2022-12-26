@@ -3,6 +3,7 @@ const util = require("../util/util");
 const Discord = require("discord.js");
 const fs = require("fs");
 const crypto = require("crypto");
+const scheduler = require("node-schedule")
 
 const data = new SlashCommandBuilder()
   .setName("vote")
@@ -239,7 +240,6 @@ async function execute(interaction) {
       options: options,
     });
     VoteObject.sendVote();
-    VoteObject.setSchedule();
     //
   } else if (interaction.options.getSubcommand() === "stop") {
     await interaction.deferReply({ ephemeral: true });
@@ -409,7 +409,7 @@ module.exports.excute = execute;
 class Vote {
   /**
    * Create a new vote
-   * @param {{topic: string, description: string, overlap: boolean, term: number, interaction: Discord.Interaction, seed: string, max: number, username: string, lang: any, channelname: string, message?: Discord.Message|object, stopmenu?: Discord.ActionRow|object, client?: Discord.Client, options: {option1: string, option2: string, option3: string, option4: string, option5: string, option6: string, option7: string, option8: string, option9: string, option10: string }}} param0
+   * @param {{topic: string, description: string, overlap: boolean, term: number, interaction: Discord.Interaction, seed: string, max: number, username: string, lang: any, channelname: string, endSchedule: scheduler.Job, message?: Discord.Message|object, stopmenu?: Discord.ActionRow|object, client?: Discord.Client, options: {option1: string, option2: string, option3: string, option4: string, option5: string, option6: string, option7: string, option8: string, option9: string, option10: string }}} param0
    */
   constructor({
     topic,
@@ -426,6 +426,7 @@ class Vote {
     stopmenu,
     client,
     options,
+    endSchedule
   }) {
     this.topic = topic;
     this.description = description;
@@ -436,6 +437,14 @@ class Vote {
     this.max = max;
     this.username = username;
     this.channelname = channelname;
+    this.endSchedule = endSchedule;
+    if (this.endSchedule) this.setEndSchedule(this.endSchedule);
+    else {
+      let time = new Date()
+      time.setHours(time.getHours() + this.term);
+      this.endTime = time;
+      this.setEndSchedule(time);
+    }
     if (typeof lang === "string") this.lang = util.setLang(lang);
     else this.lang = lang;
     Object.keys(options).forEach((key) =>
@@ -448,7 +457,7 @@ class Vote {
   }
 
   toJSON() {
-    let json = {
+    let prop = {
       topic: this.topic,
       description: this.description,
       overlap: this.overlap,
@@ -460,30 +469,16 @@ class Vote {
       lang: this.lang.language,
       channelname: this.channelname,
       options: this.options,
+      endTime: this.endTime.toString()
     };
-    json.interaction.appPermissions = `${json.interaction.appPermissions}`;
-    json.interaction.memberPermissions = `${json.interaction.memberPermissions}`;
-    if (this.message) json["message"] = this.message.toJSON();
-    if (this.stopmenu) json["stopmenu"] = this.stopmenu.toJSON();
-    return json;
+
+    prop.interaction.appPermissions = `${prop.interaction.appPermissions}`;
+    prop.interaction.memberPermissions = `${prop.interaction.memberPermissions}`;
+    if (this.message) prop["message"] = this.message.toJSON();
+    if (this.stopmenu) prop["stopmenu"] = this.stopmenu.toJSON();
+    return prop;
   }
 
-  setSchedule() {
-    let stopDate = new Date();
-    stopDate.setHours(stopDate.getHours() + this.term);
-
-    let scheduleData = fs.readFileSync(
-      require.resolve("../data/schedule.json"),
-      "utf8"
-    );
-    let schedule = JSON.parse(scheduleData);
-    schedule.push({ date: stopDate, vote: this.toJSON() });
-    fs.writeFileSync(
-      require.resolve("../data/schedule.json"),
-      JSON.stringify(schedule)
-    );
-    return true;
-  }
 
   /**
    *
@@ -737,12 +732,25 @@ class Vote {
     let votedData = getVotedData(voteData[this.seed]["voted"]);
     let msgData = getVotedMsg(votedData, this, true);
 
+    let votedArray = []
+    let keys = Object.keys(votedData);
+    let values = Object.values(votedData)
+    for (let i = 0; i < keys.length; i++) {
+      keys[i] = Object.values(this.options)[keys[i].split("vote")[1]];
+      votedArray.push({ name: keys[i], value: values[i] })
+    }
+    votedArray.sort((a, b) => b.value - a.value)
+
     const editEmbed = new Discord.EmbedBuilder()
       .setTitle(
         this.lang.interaction.menu.vote.embed.votefin + " | " + this.topic
       )
       .setColor("Green")
-      .setDescription(`\`\`\`js\n${msgData}\n\`\`\``);
+    if (votedArray[0]?.name) editEmbed.addFields({ name: "1st", value: votedArray[0].name })
+    if (votedArray[1]?.name) editEmbed.addFields({ name: "2nd", value: votedArray[1].name })
+    if (votedArray[2]?.name) editEmbed.addFields({ name: "3rd", value: votedArray[2].name })
+
+    editEmbed.addFields({ name: this.lang.interaction.menu.vote.embed.result, value: `\`\`\`js\n${msgData}\n\`\`\`` });
 
     await message.edit({
       content: this.lang.interaction.menu.vote.embed.votefinished,
@@ -775,24 +783,16 @@ class Vote {
       JSON.stringify(voteData)
     );
 
-    let dataFile = fs.readFileSync(
-      require.resolve("../data/schedule.json"),
-      "utf8"
-    );
-    /**
-     * @type {Array}
-     */
-    let schedule = JSON.parse(dataFile);
-    schedule.forEach((item, index) => {
-      if (item.vote.seed === this.seed) {
-        schedule.splice(index, 1);
-      }
-    });
+    if (this.endSchedule !== "End") {
+      this.endSchedule.cancel()
+    }
+  }
 
-    fs.writeFileSync(
-      require.resolve("../data/schedule.json"),
-      JSON.stringify(schedule)
-    );
+  async setEndSchedule(date) {
+    this.endSchedule = scheduler.scheduleJob(date, async () => {
+      this.endSchedule = "End"
+      await this.stopVote();
+    })
   }
 }
 
@@ -958,26 +958,28 @@ function getVotedMsg(data, classData, stop) {
     let stopOpt = Object.values(classData.options);
     let obj = {};
 
-    if (stopOpt[0] && data["vote0"]) obj[stopOpt[0]] = data["vote0"];
-    else if (stopOpt[0]) obj[stopOpt[0]] = 0;
-    if (stopOpt[1] && data["vote1"]) obj[stopOpt[1]] = data["vote1"];
-    else if (stopOpt[1]) obj[stopOpt[1]] = 0;
-    if (stopOpt[2] && data["vote2"]) obj[stopOpt[2]] = data["vote2"];
-    else if (stopOpt[2]) obj[stopOpt[2]] = 0;
-    if (stopOpt[3] && data["vote3"]) obj[stopOpt[3]] = data["vote3"];
-    else if (stopOpt[3]) obj[stopOpt[3]] = 0;
-    if (stopOpt[4] && data["vote4"]) obj[stopOpt[4]] = data["vote4"];
-    else if (stopOpt[4]) obj[stopOpt[4]] = 0;
-    if (stopOpt[5] && data["vote5"]) obj[stopOpt[5]] = data["vote5"];
-    else if (stopOpt[5]) obj[stopOpt[5]] = 0;
-    if (stopOpt[6] && data["vote6"]) obj[stopOpt[6]] = data["vote6"];
-    else if (stopOpt[6]) obj[stopOpt[6]] = 0;
-    if (stopOpt[7] && data["vote7"]) obj[stopOpt[7]] = data["vote7"];
-    else if (stopOpt[7]) obj[stopOpt[7]] = 0;
-    if (stopOpt[8] && data["vote8"]) obj[stopOpt[8]] = data["vote8"];
-    else if (stopOpt[8]) obj[stopOpt[8]] = 0;
-    if (stopOpt[9] && data["vote9"]) obj[stopOpt[9]] = data["vote9"];
-    else if (stopOpt[9]) obj[stopOpt[9]] = 0;
+    {
+      if (stopOpt[0] && data["vote0"]) obj[stopOpt[0]] = data["vote0"];
+      else if (stopOpt[0]) obj[stopOpt[0]] = 0;
+      if (stopOpt[1] && data["vote1"]) obj[stopOpt[1]] = data["vote1"];
+      else if (stopOpt[1]) obj[stopOpt[1]] = 0;
+      if (stopOpt[2] && data["vote2"]) obj[stopOpt[2]] = data["vote2"];
+      else if (stopOpt[2]) obj[stopOpt[2]] = 0;
+      if (stopOpt[3] && data["vote3"]) obj[stopOpt[3]] = data["vote3"];
+      else if (stopOpt[3]) obj[stopOpt[3]] = 0;
+      if (stopOpt[4] && data["vote4"]) obj[stopOpt[4]] = data["vote4"];
+      else if (stopOpt[4]) obj[stopOpt[4]] = 0;
+      if (stopOpt[5] && data["vote5"]) obj[stopOpt[5]] = data["vote5"];
+      else if (stopOpt[5]) obj[stopOpt[5]] = 0;
+      if (stopOpt[6] && data["vote6"]) obj[stopOpt[6]] = data["vote6"];
+      else if (stopOpt[6]) obj[stopOpt[6]] = 0;
+      if (stopOpt[7] && data["vote7"]) obj[stopOpt[7]] = data["vote7"];
+      else if (stopOpt[7]) obj[stopOpt[7]] = 0;
+      if (stopOpt[8] && data["vote8"]) obj[stopOpt[8]] = data["vote8"];
+      else if (stopOpt[8]) obj[stopOpt[8]] = 0;
+      if (stopOpt[9] && data["vote9"]) obj[stopOpt[9]] = data["vote9"];
+      else if (stopOpt[9]) obj[stopOpt[9]] = 0;
+    }
 
     for (let i = 0; i < Object.values(obj).length; i++) {
       let key = Object.keys(obj)[i];

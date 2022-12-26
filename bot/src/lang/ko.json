@@ -194,7 +194,8 @@
         "embed": {
           "votefin": "투표 종료",
           "votefinResult": "[투표 결과](${msg.url})를 확인하세요!",
-          "votefinished": "투표가 종료되었습니다."
+          "votefinished": "투표가 종료되었습니다.",
+          "result": "전체 결과"
         }
       },
       "search": {
